@@ -18,8 +18,9 @@
 ;; or
 ;; (add-hook 'my-pretty-language-hook 'turn-on-pretty-mode)
 
-;;; Code:
+;; Mark Shoulson: playing around with symbols that look fun.
 
+;;; Code:
 (require 'cl)
 
 (defvar pretty-syntax-types '(?_ ?w))
@@ -29,15 +30,35 @@
   "Compose a sequence of ascii chars into a symbol."
   (let* ((start (match-beginning 0))
 	 (end (match-end 0))
-         (syntax (char-syntax (char-after start))))
-    (if (or (if (memq syntax pretty-syntax-types)
-                (or (memq (char-syntax (char-before start)) pretty-syntax-types)
-                    (memq (char-syntax (char-after end)) pretty-syntax-types))
-              (memq (char-syntax (char-before start)) '(?. ?\\)))
-            (memq (get-text-property start 'face)
-                  '(font-lock-doc-face font-lock-string-face
-                                       font-lock-comment-face)))
-        (remove-text-properties start end '(composition))
+         (syntax (char-syntax (char-after start)))
+	 (beforestart (1- start))
+	 (afterend (1+ end)))
+    ; Can I find a way to let this allow ' ' and " " through?
+    ; maybe... start and end are quote-face but beforestart and beforeend
+    ; are not?  Then we would have the whole quote.
+    ; The statement's conditions are not well-suited to this
+    ; kind of exception...
+    ; Tried, doesn't work. :(
+    ;; can't even do it with straightforward exceptions...
+;;;    (display-message-or-buffer 
+;;;     (pp-to-string (list (and start 
+;;;			      (get-text-property start 'face)))))
+    (if 
+	(and
+	 (or 
+	  (if (memq syntax pretty-syntax-types)
+	      (or (memq (char-syntax (char-before start)) pretty-syntax-types)
+		  (memq (char-syntax (char-after end)) pretty-syntax-types))
+	    (memq (char-syntax (char-before start)) '(?. ?\\)))
+	  (memq (get-text-property start 'face)
+		'(font-lock-doc-face font-lock-string-face
+				     font-lock-comment-face)))
+	 (not (and (and start		; FAILS INSIDE STRINGS ?
+			(equal (char-syntax (char-after start)) ?\"))
+		   (and end
+			(equal (char-syntax (char-before end)) ?\"))))
+	 )
+	(remove-text-properties start end '(composition))
       (compose-region start end (cdr (assoc (match-string 0) alist)))
 ;;;       (add-text-properties start end `(display ,repl)))
       ))
@@ -137,6 +158,8 @@ expected by `pretty-patterns'"
                                 pretty-patterns))))))
     pretty-patterns))
 
+;; I am adding a great many of these which I will freely admit to being
+;; there simply because I can and am trying to maximize "stuff" being done.
 (defvar pretty-patterns
   (let* ((lispy '(scheme emacs-lisp lisp))
          (mley '(tuareg haskell sml))
@@ -148,26 +171,48 @@ expected by `pretty-patterns'"
            ("<>" tuareg octave)
            ("~=" octave)
            ("/=" haskell emacs-lisp))
+       (?≡ ("is" python))
+       (?≢ ("is not" python))
        (?≤ ("<=" ,@all))
        (?≥ (">=" ,@all))
        (?← ("<-" ,@mley ess))
        (?➛ ("->" ,@mley ess c c++ perl))
        (?↑ ("\\^" tuareg))
-       (?⟹ ("=>" sml perl ruby haskell))
+       (?⇒ ("=>" sml perl ruby haskell))
+       ; (?⟹ ("=>" sml perl ruby haskell)) ;too long
        (?∅ ("nil" emacs-lisp ruby)
            ("null" scheme java)
            ("NULL" c c++)
-;;;        ("None" python)
+	   ("None" python)
            ("()" ,@mley))
-;;;    (?… ("\\.\\.\\." scheme))
+       (?␣ ("' '" perl python)		; DOES NOT WORK -- now sorta works
+	   ("\" \"" ,@all)		; we don't prettify quoted strings.
+	   ("q( )" perl))	  ; (nobody uses this in perl, but it works)
+       (?ϵ ("''" perl python)		; DOES NOT WORK.  (Better symbol?)
+	   ("\"\"" ,@all)		; maybe we can think of something.
+	   ("q()" perl))	   ; (nobody uses this in perl, but it works)
+       (?‴ ("\"\"\"" python)	   ; mainly to prevent conflicts with ""
+	   ("'''" python))
+       (?≟ ("==" ,@all))	   ; so what, having fun.
+       (?… ("\\.\\.\\." scheme perl))	; perl6
+       (?‥ ("\\.\\." perl))		; maybe hard to read
 ;;;    (?∀ ("List.for_all" tuareg))
+       (?∀ ("all" tuareg perl python))		; perl6
 ;;;    (?∃ ("List.exists" tuareg))
+       (?∃ ("any" perl python))		; perl6
+       (?∄ ("none" perl))		; perl6
+       (?∈ ("in" python))
 ;;;    (?∈ ("List.mem" tuareg)
-;;;        ("member" ,@lispy))
-;;;    (?∉ ())
+;;;        ("member" ,@lispy))       
+       (?∉ ("not in" python))
        (?√ ("sqrt" ,@all))
        (?∑ ("sum" python))
+       (?ℤ ("int" python))		; ☺
+       (?ℝ ("float" python))
+       (?ℂ ("complex" python))
+;;;    (?⅀ ("str" python))    ; too obscure
        (?α ("alpha" ,@all)
+	   ("'a" python)
            ("'a" ,@mley))
        (?β ("beta" ,@all)
            ("'b" ,@mley))
@@ -184,7 +229,9 @@ expected by `pretty-patterns'"
            ("\\" haskell))
        (?π ("pi" ,@all)
            ("M_PI" c c++))
-       (?φ ("psi" ,@all))
+       (?τ ("tau" ,@all))
+       (?φ ("phi" ,@all))
+       (?ψ ("psi" ,@all))
 
        (?² ("**2" python tuareg octave)
            ("^2" octave haskell))
@@ -193,7 +240,10 @@ expected by `pretty-patterns'"
        (?ⁿ ("**n" python tuareg octave)
            ("^n" octave haskell))
 
-    ;; (?₀ ("[0]" ,@c-like)
+; I like these, but they'll never work in practice. (will they?)
+; Oh, let's try just [0], since that's commonly used.
+       (?₀ ("[0]" ,@c-like))
+; dumb idea, but I have to at least play with it.
     ;;     ("(0)" octave)
     ;;     (".(0)" tuareg))
     ;; (?₁ ("[1]" ,@c-like)
@@ -229,12 +279,18 @@ expected by `pretty-patterns'"
    
 ;;;    (?∧ ("\\<And\\>"     emacs-lisp lisp python)
 ;;;        ("\\<andalso\\>" sml)
-;;;        ("&&"            c c++ perl haskell))
+       (?⋀ ("and" python perl)) ;careful not to conflate or and || in perl.
+;;;	   ("&&"            c c++ perl haskell))
 ;;;    (?∨ ("\\<or\\>"      emacs-lisp lisp)
+       (?⋁ ("or" python perl))  ; N-ARY LOGICAL OR looks less like v
 ;;;        ("\\<orelse\\>"  sml)
-;;;        ("||"            c c++ perl haskell))
-;;;    (?¬ ("\\<!\\>"       c c++ perl sh)
+;;;	   ("||"            c c++ perl haskell))
+       (?¬ ("!"       c c++ perl sh)
 ;;;        ("\\<not\\>"     lisp emacs-lisp scheme haskell sml))
+	   ("not" python perl))
+       ;; These?  Probably dumb.
+       (?■ ("True" python perl))
+       (?□ ("False" python perl))
 
        )))
     "*List of pretty patterns.
