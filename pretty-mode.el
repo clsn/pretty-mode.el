@@ -28,6 +28,10 @@
 ;; modified from `sml-mode'
 (defun pretty-font-lock-compose-symbol (alist)
   "Compose a sequence of ascii chars into a symbol."
+  ;; (Tried to use () in the regexp so as to replace only
+  ;; part of the match.  It doesn't work.  I think it just
+  ;; doesn't give us more than the simple match in match-data,
+  ;; even when there are parens.  FYI.)
   (let* ((start (match-beginning 0))
 	 (end (match-end 0))
          (syntax (char-syntax (char-after start)))
@@ -84,6 +88,8 @@
 regular expressions with symbols. ALIST has the form ((STRING .
 REPLACE-CHAR) ...)."
   (when alist
+    ;; This regexp-opt means that the stuff listed in pretty-patterns
+    ;; basically wind up being strings and not regexps.
     `((,(regexp-opt (mapcar 'car alist))
        (0 (pretty-font-lock-compose-symbol
            ',alist))))))
