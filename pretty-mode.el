@@ -32,8 +32,11 @@
   ;; part of the match.  It doesn't work.  I think it just
   ;; doesn't give us more than the simple match in match-data,
   ;; even when there are parens.  FYI.)
-  (let* ((start (match-beginning 0))
-	 (end (match-end 0))
+  (let* ((lastgp (1- (/ (length (match-data)) 2)))
+	 (first (match-beginning 0))
+	 (last (match-end 0))
+	 (start (match-beginning lastgp))
+	 (end (match-end lastgp))
          (syntax (char-syntax (char-after start)))
 	 (beforestart (1- start))
 	 (afterend (1+ end)))
@@ -44,26 +47,29 @@
     ; kind of exception...
     ; Tried, doesn't work. :(
     ;; can't even do it with straightforward exceptions...
-;;;    (display-message-or-buffer 
-;;;     (pp-to-string (list (and start 
-;;;			      (get-text-property start 'face)))))
     (if 
 	(and
 	 (or 
 	  (if (memq syntax pretty-syntax-types)
-	      (or (memq (char-syntax (char-before start)) pretty-syntax-types)
-		  (memq (char-syntax (char-after end)) pretty-syntax-types))
-	    (memq (char-syntax (char-before start)) '(?. ?\\)))
-	  (memq (get-text-property start 'face)
+	      (or (memq (char-syntax (char-before first)) pretty-syntax-types)
+		  (memq (char-syntax (char-after last)) pretty-syntax-types))
+	    (memq (char-syntax (char-before first)) '(?. ?\\)))
+	  (memq (get-text-property first 'face)
 		'(font-lock-doc-face font-lock-string-face
 				     font-lock-comment-face)))
+	 ;; Got this to work for '', ' '.  But it's buggy.
 	 (not (and (and start		; FAILS INSIDE STRINGS ?
 			(equal (char-syntax (char-after start)) ?\"))
 		   (and end
 			(equal (char-syntax (char-before end)) ?\"))))
 	 )
 	(remove-text-properties start end '(composition))
-      (compose-region start end (cdr (assoc (match-string 0) alist)))
+      ;; regexps only have a single entry in their "alist", and
+      ;; matching it will fail anyway.  So just take the car.
+      ;; (display-message-or-buffer (pp-to-string (length alist)))
+      (compose-region start end (cdr (if (> (length alist) 1)
+					 (assoc (match-string lastgp) alist)
+				       (car alist))))
 ;;;       (add-text-properties start end `(display ,repl)))
       ))
   ;; Return nil because we're not adding any face property.
@@ -85,7 +91,7 @@
 
 (defun pretty-font-lock-keywords (alist)
   "Return a `font-lock-keywords' style entry for replacing
-regular expressions with symbols. ALIST has the form ((STRING .
+string with symbols. ALIST has the form ((STRING .
 REPLACE-CHAR) ...)."
   (when alist
     ;; This regexp-opt means that the stuff listed in pretty-patterns
@@ -94,6 +100,16 @@ REPLACE-CHAR) ...)."
        (0 (pretty-font-lock-compose-symbol
            ',alist))))))
 
+(defun pretty-font-lock-regexp (regexp-pair)
+  "Return a `font-lock-keywords' style entry for replacing
+a single regular expression (specifically, its last capture-group)
+with a symbol"
+  (let* ((regexp (car regexp-pair))
+	 (glyph (cdr regexp-pair)))
+    (when (and regexp glyph)
+      `((,regexp
+	 (0 (pretty-font-lock-compose-symbol '((,regexp . ,glyph)))))))))
+  
 (defun pretty-keywords (&optional mode)
   "Return the font-lock keywords for MODE, or the current mode if
 MODE is nil. Return nil if there are no keywords."
@@ -104,6 +120,20 @@ MODE is nil. Return nil if there are no keywords."
                             (assoc mode pretty-interaction-mode-alist))
                            pretty-patterns)))))
     (pretty-font-lock-keywords kwds)))
+
+(defun pretty-key-regexps (&optional mode)
+  "Return the _list_ of font-lock-keyword-format entries for the
+regexps to be prettied in mode, or current mode if mode is nil.
+Return nil if there are none.  Not exactly parallel to
+pretty-keywords"
+  (let* ((mode (or mode major-mode))
+	 (kres (cdr-safe
+		(or (assoc mode pretty-regexp-patterns)
+		    (assoc (cdr-safe
+			    (assoc mode pretty-interaction-mode-alist))
+			   pretty-regexp-patterns)))))
+    (mapcar 'pretty-font-lock-regexp kres)))
+	 
 
 (defgroup pretty nil "Minor mode for replacing text with symbols "
   :group 'faces)
@@ -120,6 +150,8 @@ displayed as λ in lisp modes."
   (if pretty-mode
       (progn
         (font-lock-add-keywords nil (pretty-keywords) t)
+	(mapcar (lambda (x) (font-lock-add-keywords nil x t)) 
+		(pretty-key-regexps))
         (font-lock-fontify-buffer))
     (font-lock-remove-keywords nil (pretty-keywords))
     (remove-text-properties (point-min) (point-max) '(composition nil))))
@@ -200,8 +232,8 @@ expected by `pretty-patterns'"
        (?‴ ("\"\"\"" python)	   ; mainly to prevent conflicts with ""
 	   ("'''" python))
        (?≟ ("==" ,@all))	   ; so what, having fun.
-       (?… ("\\.\\.\\." scheme perl))	; perl6
-       (?‥ ("\\.\\." perl))		; maybe hard to read
+       (?… ("..." scheme perl))	; perl6
+       (?‥ (".." perl))		; maybe hard to read
 ;;;    (?∀ ("List.for_all" tuareg))
        (?∀ ("all" tuareg perl python))		; perl6
 ;;;    (?∃ ("List.exists" tuareg))
@@ -315,10 +347,22 @@ relevant buffer(s)."
   (font-lock-add-keywords
    mode (mapcar (lambda (kw) `(,(car kw)
                           (0 (prog1 nil
-                               (compose-region (match-beginning 0)
-                                               (match-end 0)
+			       ;; Use len(match-data)/2-1 to get the last group
+                               (compose-region (match-beginning 
+						(1- (/ 
+						     (length (match-data)) 2)))
+                                               (match-end
+						(1- (/ 
+						     (length (match-data)) 2)))
                                                ,(cdr kw))))))
                 keywords)))
+
+;; Keywords that have to be truly regexps
+(defvar pretty-regexp-patterns
+  ;; Format: same as for patterns:
+  ;; (glyph (regexp mode...) ... )
+  (pretty-compile-patterns
+  '((?• ("\\w\\(\\.\\)[[:alpha:]_]" python)))))
 
 (defun pretty-regexp (regexp glyph)
   "Replace REGEXP with GLYPH in buffer."
@@ -326,8 +370,5 @@ relevant buffer(s)."
 MCharacter to replace with: ")
   (pretty-add-keywords nil `((,regexp . ,(string-to-char glyph))))
   (font-lock-fontify-buffer))
-
-
-
 
 (provide 'pretty-mode)
