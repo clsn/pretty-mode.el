@@ -344,7 +344,7 @@ relevant buffer(s)."
   ;; (glyph (regexp mode...) ... )
   (pretty-compile-patterns
   '((?• ("\\w\\(\\.\\)[[:alpha:]_]" python))
-    (?⁑ ("\\s.\\s-*\\(\\*\\*\\)" python)) ; general enough?
+    (?⁑ ("\\(?:\\s.\\|\\s(\\)\\s-*\\(\\*\\*\\)" python)) ; general enough?
     ;; Don't work at the beginning of a line, alas
     (?␣ (".\\s-*\\(?2:\\(?1:['\"]\\) \\1\\)" perl python c c++ sh java))
     (?ϵ (".\\s-*\\(?2:\\(?1:['\"]\\)\\1\\)" perl python c c++ sh java))
