@@ -18,9 +18,8 @@
 ;; or
 ;; (add-hook 'my-pretty-language-hook 'turn-on-pretty-mode)
 
-;; Mark Shoulson: playing around with symbols that look fun.
-
 ;;; Code:
+
 (require 'cl)
 
 (defvar pretty-syntax-types '(?_ ?w))
@@ -28,30 +27,18 @@
 ;; modified from `sml-mode'
 (defun pretty-font-lock-compose-symbol (alist)
   "Compose a sequence of ascii chars into a symbol."
-  (let* ((lastgp (1- (/ (length (match-data)) 2)))
-	 (first (match-beginning 0))
-	 (last (match-end 0))
-	 (start (match-beginning lastgp))
-	 (end (match-end lastgp))
+  (let* ((start (match-beginning 0))
+	 (end (match-end 0))
          (syntax (char-syntax (char-after start))))
-    ;; Can I find a way to let this allow ' ' and " " through?
-    ;; Can do it using the regexps, to catch a first/last that aren't quoted.
-    (if 
-	(or 
-	 (if (memq syntax pretty-syntax-types)
-	     (or (memq (char-syntax (char-before first)) pretty-syntax-types)
-		 (memq (char-syntax (char-after last)) pretty-syntax-types))
-	   (memq (char-syntax (char-before first)) '(?. ?\\)))
-	 (memq (get-text-property first 'face)
-	       '(font-lock-doc-face font-lock-string-face
-				    font-lock-comment-face)))
-	(remove-text-properties start end '(composition))
-      ;; regexps only have a single entry in their "alist", and
-      ;; matching it will fail anyway.  So just take the car.
-      ;; (display-message-or-buffer (pp-to-string (length alist)))
-      (compose-region start end (cdr (if (> (length alist) 1)
-					 (assoc (match-string lastgp) alist)
-				       (car alist))))
+    (if (or (if (memq syntax pretty-syntax-types)
+                (or (memq (char-syntax (char-before start)) pretty-syntax-types)
+                    (memq (char-syntax (char-after end)) pretty-syntax-types))
+              (memq (char-syntax (char-before start)) '(?. ?\\)))
+            (memq (get-text-property start 'face)
+                  '(font-lock-doc-face font-lock-string-face
+                                       font-lock-comment-face)))
+        (remove-text-properties start end '(composition))
+      (compose-region start end (cdr (assoc (match-string 0) alist)))
 ;;;       (add-text-properties start end `(display ,repl)))
       ))
   ;; Return nil because we're not adding any face property.
@@ -73,25 +60,13 @@
 
 (defun pretty-font-lock-keywords (alist)
   "Return a `font-lock-keywords' style entry for replacing
-string with symbols. ALIST has the form ((STRING .
+regular expressions with symbols. ALIST has the form ((STRING .
 REPLACE-CHAR) ...)."
   (when alist
-    ;; This regexp-opt means that the stuff listed in pretty-patterns
-    ;; basically wind up being strings and not regexps.
     `((,(regexp-opt (mapcar 'car alist))
        (0 (pretty-font-lock-compose-symbol
            ',alist))))))
 
-(defun pretty-font-lock-regexp (regexp-pair)
-  "Return a `font-lock-keywords' style entry for replacing
-a single regular expression (specifically, its last capture-group)
-with a symbol"
-  (let* ((regexp (car regexp-pair))
-	 (glyph (cdr regexp-pair)))
-    (when (and regexp glyph)
-      `((,regexp
-	 (0 (pretty-font-lock-compose-symbol '((,regexp . ,glyph)))))))))
-  
 (defun pretty-keywords (&optional mode)
   "Return the font-lock keywords for MODE, or the current mode if
 MODE is nil. Return nil if there are no keywords."
@@ -102,20 +77,6 @@ MODE is nil. Return nil if there are no keywords."
                             (assoc mode pretty-interaction-mode-alist))
                            pretty-patterns)))))
     (pretty-font-lock-keywords kwds)))
-
-(defun pretty-key-regexps (&optional mode)
-  "Return the _list_ of font-lock-keyword-format entries for the
-regexps to be prettied in mode, or current mode if mode is nil.
-Return nil if there are none.  Not exactly parallel to
-pretty-keywords"
-  (let* ((mode (or mode major-mode))
-	 (kres (cdr-safe
-		(or (assoc mode pretty-regexp-patterns)
-		    (assoc (cdr-safe
-			    (assoc mode pretty-interaction-mode-alist))
-			   pretty-regexp-patterns)))))
-    (mapcar 'pretty-font-lock-regexp kres)))
-	 
 
 (defgroup pretty nil "Minor mode for replacing text with symbols "
   :group 'faces)
@@ -132,8 +93,6 @@ displayed as λ in lisp modes."
   (if pretty-mode
       (progn
         (font-lock-add-keywords nil (pretty-keywords) t)
-	(mapcar (lambda (x) (font-lock-add-keywords nil x t)) 
-		(pretty-key-regexps))
         (font-lock-fontify-buffer))
     (font-lock-remove-keywords nil (pretty-keywords))
     (remove-text-properties (point-min) (point-max) '(composition nil))))
@@ -178,8 +137,6 @@ expected by `pretty-patterns'"
                                 pretty-patterns))))))
     pretty-patterns))
 
-;; I am adding a great many of these which I will freely admit to being
-;; there simply because I can and am trying to maximize "stuff" being done.
 (defvar pretty-patterns
   (let* ((lispy '(scheme emacs-lisp lisp))
          (mley '(tuareg haskell sml))
@@ -191,42 +148,25 @@ expected by `pretty-patterns'"
            ("<>" tuareg octave)
            ("~=" octave)
            ("/=" haskell emacs-lisp))
-       (?≡ ("is" python))
-       (?≢ ("is not" python))
        (?≤ ("<=" ,@all))
        (?≥ (">=" ,@all))
        (?← ("<-" ,@mley ess))
        (?➛ ("->" ,@mley ess c c++ perl))
        (?↑ ("\\^" tuareg))
-       (?⇒ ("=>" sml perl ruby haskell))
-       ; (?⟹ ("=>" sml perl ruby haskell)) ;too long
+       (?⟹ ("=>" sml perl ruby haskell))
        (?∅ ("nil" emacs-lisp ruby)
            ("null" scheme java)
            ("NULL" c c++)
-	   ("None" python)
+;;;        ("None" python)
            ("()" ,@mley))
-       (?␣ ("q( )" perl))		; can't get every possibility.
-       (?ϵ ("q()" perl))
-       (?‴ ("\"\"\"" python)	   ; mainly to prevent conflicts with ""
-	   ("'''" python))
-       (?≟ ("==" ,@all))	   ; so what, having fun.
-       (?… ("..." scheme perl))	; perl6  maybe ⋰ to differentiate from .. ?
-       (?‥ (".." perl))		; maybe hard to read
+;;;    (?… ("\\.\\.\\." scheme))
 ;;;    (?∀ ("List.for_all" tuareg))
-       (?∀ ("all" tuareg perl python))		; perl6
 ;;;    (?∃ ("List.exists" tuareg))
-       (?∃ ("any" perl python))		; perl6
-       (?∄ ("none" perl))		; perl6
-       (?∈ ("in" python))
 ;;;    (?∈ ("List.mem" tuareg)
-;;;        ("member" ,@lispy))       
-       (?∉ ("not in" python))
+;;;        ("member" ,@lispy))
+;;;    (?∉ ())
        (?√ ("sqrt" ,@all))
        (?∑ ("sum" python))
-       (?ℤ ("int" python))		; ☺
-       (?ℝ ("float" python))
-       (?ℂ ("complex" python))
-;;;    (?⅀ ("str" python))    ; too obscure
        (?α ("alpha" ,@all)
            ("'a" ,@mley))
        (?β ("beta" ,@all)
@@ -244,9 +184,7 @@ expected by `pretty-patterns'"
            ("\\" haskell))
        (?π ("pi" ,@all)
            ("M_PI" c c++))
-       (?τ ("tau" ,@all))
-       (?φ ("phi" ,@all))
-       (?ψ ("psi" ,@all))
+       (?φ ("psi" ,@all))
 
        (?² ("**2" python tuareg octave)
            ("^2" octave haskell))
@@ -255,10 +193,7 @@ expected by `pretty-patterns'"
        (?ⁿ ("**n" python tuareg octave)
            ("^n" octave haskell))
 
-; I like these, but they'll never work in practice. (will they?)
-; Oh, let's try just [0], since that's commonly used.
-       (?₀ ("[0]" ,@c-like))
-; dumb idea, but I have to at least play with it.
+    ;; (?₀ ("[0]" ,@c-like)
     ;;     ("(0)" octave)
     ;;     (".(0)" tuareg))
     ;; (?₁ ("[1]" ,@c-like)
@@ -294,18 +229,12 @@ expected by `pretty-patterns'"
    
 ;;;    (?∧ ("\\<And\\>"     emacs-lisp lisp python)
 ;;;        ("\\<andalso\\>" sml)
-       (?⋀ ("and" python perl)) ;careful not to conflate or and || in perl.
-;;;	   ("&&"            c c++ perl haskell))
+;;;        ("&&"            c c++ perl haskell))
 ;;;    (?∨ ("\\<or\\>"      emacs-lisp lisp)
-       (?⋁ ("or" python perl))  ; N-ARY LOGICAL OR looks less like v
 ;;;        ("\\<orelse\\>"  sml)
-;;;	   ("||"            c c++ perl haskell))
-       (?¬ ("!"       c c++ perl sh)
+;;;        ("||"            c c++ perl haskell))
+;;;    (?¬ ("\\<!\\>"       c c++ perl sh)
 ;;;        ("\\<not\\>"     lisp emacs-lisp scheme haskell sml))
-	   ("not" python perl))
-       ;; These?  Probably dumb.
-       (?■ ("True" python perl))
-       (?□ ("False" python perl))
 
        )))
     "*List of pretty patterns.
@@ -324,31 +253,10 @@ relevant buffer(s)."
   (font-lock-add-keywords
    mode (mapcar (lambda (kw) `(,(car kw)
                           (0 (prog1 nil
-			       ;; Use len(match-data)/2-1 to get the last group
-                               (compose-region (match-beginning 
-						(1- (/ 
-						     (length (match-data)) 2)))
-                                               (match-end
-						(1- (/ 
-						     (length (match-data)) 2)))
+                               (compose-region (match-beginning 0)
+                                               (match-end 0)
                                                ,(cdr kw))))))
                 keywords)))
-
-;; Keywords that have to be truly regexps
-;; You probably can't put multiple regexps for the same char, since
-;; we need the alist to be a singleton.  Instead, use multiple entries,
-;; or possibly smart regexps.  Also, maybe not use too many of these,
-;; and those you use should be fairly efficient.
-(defvar pretty-regexp-patterns
-  ;; Format: same as for patterns:
-  ;; (glyph (regexp mode...) ... )
-  (pretty-compile-patterns
-  '((?• ("\\w\\(\\.\\)[[:alpha:]_]" python))
-    (?⁑ ("\\s.\\s-*\\(\\*\\*\\)" python)) ; general enough?
-    ;; Don't work at the beginning of a line, alas
-    (?␣ (".\\s-*\\(?2:\\(?1:['\"]\\) \\1\\)" perl python c c++ sh java))
-    (?ϵ (".\\s-*\\(?2:\\(?1:['\"]\\)\\1\\)" perl python c c++ sh java))
-    )))
 
 (defun pretty-regexp (regexp glyph)
   "Replace REGEXP with GLYPH in buffer."
@@ -356,5 +264,8 @@ relevant buffer(s)."
 MCharacter to replace with: ")
   (pretty-add-keywords nil `((,regexp . ,(string-to-char glyph))))
   (font-lock-fontify-buffer))
+
+
+
 
 (provide 'pretty-mode)
