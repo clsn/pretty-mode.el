@@ -232,7 +232,7 @@ expected by `pretty-patterns'"
        (?‴ ("\"\"\"" python)	   ; mainly to prevent conflicts with ""
 	   ("'''" python))
        (?≟ ("==" ,@all))	   ; so what, having fun.
-       (?… ("..." scheme perl))	; perl6
+       (?… ("..." scheme perl))	; perl6  maybe ⋰ to differentiate from .. ?
        (?‥ (".." perl))		; maybe hard to read
 ;;;    (?∀ ("List.for_all" tuareg))
        (?∀ ("all" tuareg perl python))		; perl6
@@ -250,7 +250,6 @@ expected by `pretty-patterns'"
        (?ℂ ("complex" python))
 ;;;    (?⅀ ("str" python))    ; too obscure
        (?α ("alpha" ,@all)
-	   ("'a" python)
            ("'a" ,@mley))
        (?β ("beta" ,@all)
            ("'b" ,@mley))
@@ -362,7 +361,9 @@ relevant buffer(s)."
   ;; Format: same as for patterns:
   ;; (glyph (regexp mode...) ... )
   (pretty-compile-patterns
-  '((?• ("\\w\\(\\.\\)[[:alpha:]_]" python)))))
+  '((?• ("\\w\\(\\.\\)[[:alpha:]_]" python))
+    (?⁑ ("\\s.\\s-*\\(\\*\\*\\)" python)) ; general enough?
+    )))
 
 (defun pretty-regexp (regexp glyph)
   "Replace REGEXP with GLYPH in buffer."
