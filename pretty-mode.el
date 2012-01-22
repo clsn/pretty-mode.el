@@ -18,7 +18,11 @@
 ;; or
 ;; (add-hook 'my-pretty-language-hook 'turn-on-pretty-mode)
 
-;; Mark Shoulson: playing around with symbols that look fun.
+;; Being heavily messed-with by Mark Shoulson, January 2012.
+;; Adding a bunch of fairly useless and far-fetched character mappings.
+;; Also restoring the ability for the replaced keywords to be *regexps*
+;; and not just strings, and moreover for the replaced bit to be only
+;; part of the regexp.
 
 ;;; Code:
 (require 'cl)
@@ -35,6 +39,7 @@
 	 (end (match-end lastgp))
          (syntax (char-syntax (char-after start))))
     ;; Can I find a way to let this allow ' ' and " " through?
+    ;; (quoted strings are usually excluded)
     ;; Can do it using the regexps, to catch a first/last that aren't quoted.
     (if 
 	(or 
@@ -188,7 +193,7 @@ expected by `pretty-patterns'"
     (pretty-compile-patterns
      `(
        (?≠ ("!=" ,@c-like scheme octave)
-           ("<>" tuareg octave)
+           ("<>" tuareg octave python)
            ("~=" octave)
            ("/=" haskell emacs-lisp))
        (?≡ ("is" python))
