@@ -196,6 +196,12 @@ expected by `pretty-patterns'"
            ("<>" tuareg octave python)
            ("~=" octave)
            ("/=" haskell emacs-lisp))
+       ;; How about ⧺ for ++ ?  bleah.
+       ;; ≅ looks too much like ≡; bummer.  Or I'd use it for =~ in perl.
+       ;; maybe ∝ for that?
+       ;; ≗ ≜ ≞ ? Δ for change... m for match/modify...?
+       (?≜ ("=~" perl))			; ??
+       ;; ≙≚ for &= and |= ?
        (?≡ ("is" python))
        (?≢ ("is not" python))
        (?≤ ("<=" ,@all))
@@ -222,6 +228,7 @@ expected by `pretty-patterns'"
 ;;;    (?∃ ("List.exists" tuareg))
        (?∃ ("any" perl python))		; perl6
        (?∄ ("none" perl))		; perl6
+       (?𝟙 ("one" perl))		; perl6
        (?∈ ("in" python))
 ;;;    (?∈ ("List.mem" tuareg)
 ;;;        ("member" ,@lispy))       
@@ -305,10 +312,11 @@ expected by `pretty-patterns'"
        (?⋁ ("or" python perl))  ; N-ARY LOGICAL OR looks less like v
 ;;;        ("\\<orelse\\>"  sml)
 ;;;	   ("||"            c c++ perl haskell))
+       (?⊻ ("xor" perl))
        (?¬ ("!"       c c++ perl sh)
 ;;;        ("\\<not\\>"     lisp emacs-lisp scheme haskell sml))
 	   ("not" python perl))
-       ;; These?  Probably dumb.
+       ;; These?  Probably dumb. ⊨ (TRUE) doesn't look true enough.
        (?■ ("True" python perl))
        (?□ ("False" python perl))
 
@@ -348,11 +356,12 @@ relevant buffer(s)."
   ;; Format: same as for patterns:
   ;; (glyph (regexp mode...) ... )
   (pretty-compile-patterns
-  '((?• ("\\w\\(\\.\\)[[:alpha:]_]" python))
+  '((?∙ ("\\w\\(\\.\\)[[:alpha:]_]" python))
     (?⁑ ("\\(?:\\s.\\|\\s(\\)\\s-*\\(\\*\\*\\)" python)) ; general enough?
     ;; Don't work at the beginning of a line, alas
     (?␣ (".\\s-*\\(?2:\\(?1:['\"]\\) \\1\\)" perl python c c++ sh java))
     (?ϵ (".\\s-*\\(?2:\\(?1:['\"]\\)\\1\\)" perl python c c++ sh java))
+    (?⏨ ("[0-9.]+\\(e\\)[-+]?[0-9]+" perl python c c++ java)) ;exponent
     )))
 
 (defun pretty-regexp (regexp glyph)
