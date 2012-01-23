@@ -208,6 +208,7 @@ expected by `pretty-patterns'"
        (?≥ (">=" ,@all))
        (?← ("<-" ,@mley ess))
        (?➛ ("->" ,@mley ess c c++ perl))
+       (?♢ ("<>" perl))
        (?↑ ("\\^" tuareg))
        (?⇒ ("=>" sml perl ruby haskell))
        ; (?⟹ ("=>" sml perl ruby haskell)) ;too long
