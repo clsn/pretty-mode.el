@@ -209,6 +209,17 @@ expected by `pretty-patterns'"
        ;; maybe ∝ for that?
        ;; ≗ ≜ ≞ ? Δ for change... m for match/modify...?
        (?≜ ("=~" perl))			; ??
+       (?∷ ("::" perl))			; Unless there's something cooler.
+       ;; ⊰⊱≺≻≈ for gt/lt/eq?
+       ;; ≎⇔⋛ for eq? cmp?
+       (?⋚ ("<=>" perl))
+       ;; ≺≻≼≽ aren't good enough I think.
+       (?⊲ ("lt" perl))
+       (?⊳ ("gt" perl))
+       (?⊴ ("le" perl))
+       (?⊵ ("ge" perl))
+       (?≈ ("eq" perl))			; Too close to = ? ⋈ instead?
+       (?≉ ("ne" perl))
        ;; ≙≚ for &= and |= ?
        (?≡ ("is" python))
        (?≢ ("is not" python))
