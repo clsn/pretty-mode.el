@@ -57,6 +57,13 @@
       (compose-region start end (cdr (if (> (length alist) 1)
 					 (assoc (match-string lastgp) alist)
 				       (car alist))))
+;;; Uncomment these lines and redefine the function to make it actually
+;;; change the characters!
+;;;      (insert (char-to-string (cdr (if (> (length alist) 1)
+;;;				       (assoc (match-string lastgp) alist)
+;;;				     (car alist)))))
+;;;      (delete-region start end)
+
 ;;;       (add-text-properties start end `(display ,repl)))
       ))
   ;; Return nil because we're not adding any face property.
