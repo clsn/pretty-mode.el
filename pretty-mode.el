@@ -19,6 +19,7 @@
 ;; (add-hook 'my-pretty-language-hook 'turn-on-pretty-mode)
 
 ;; Being heavily messed-with by Mark Shoulson, January 2012.
+;; Taken from http://www.emacswiki.org/emacs/pretty-mode.el for modification
 ;; Adding a bunch of fairly useless and far-fetched character mappings.
 ;; Also restoring the ability for the replaced keywords to be *regexps*
 ;; and not just strings, and moreover for the replaced bit to be only
@@ -215,7 +216,7 @@ expected by `pretty-patterns'"
        (?≥ (">=" ,@all))
        (?← ("<-" ,@mley ess))
        (?➛ ("->" ,@mley ess c c++ perl))
-       (?♢ ("<>" perl))
+       (?◇ ("<>" perl))
        (?↑ ("\\^" tuareg))
        (?⇒ ("=>" sml perl ruby haskell))
        ; (?⟹ ("=>" sml perl ruby haskell)) ;too long
