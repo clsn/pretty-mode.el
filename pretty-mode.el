@@ -48,9 +48,13 @@
 	     (or (memq (char-syntax (char-before first)) pretty-syntax-types)
 		 (memq (char-syntax (char-after last)) pretty-syntax-types))
 	   (memq (char-syntax (char-before first)) '(?. ?\\)))
-	 (memq (get-text-property first 'face)
-	       '(font-lock-doc-face font-lock-string-face
-				    font-lock-comment-face)))
+	 (and				; first AND last must be in quotes
+	  (memq (get-text-property first 'face)
+		'(font-lock-doc-face font-lock-string-face
+				     font-lock-comment-face))
+	  (memq (get-text-property last 'face)
+		'(font-lock-doc-face font-lock-string-face
+				     font-lock-comment-face))))
 	(remove-text-properties start end '(composition))
       ;; regexps only have a single entry in their "alist", and
       ;; matching it will fail anyway.  So just take the car.
@@ -208,7 +212,7 @@ expected by `pretty-patterns'"
        ;; ≅ looks too much like ≡; bummer.  Or I'd use it for =~ in perl.
        ;; maybe ∝ for that?
        ;; ≗ ≜ ≞ ? Δ for change... m for match/modify...?
-       (?≜ ("=~" perl))			; ??
+       (?≜ ("=~" perl))			; ?? ⩳ ?
        (?∷ ("::" perl))			; Unless there's something cooler.
        ;; ⊰⊱≺≻≈ for gt/lt/eq?
        ;; ≎⇔⋛ for eq? cmp?
@@ -221,6 +225,7 @@ expected by `pretty-patterns'"
        (?≈ ("eq" perl))			; Too close to = ? ⋈ instead?
        (?≉ ("ne" perl))
        ;; ≙≚ for &= and |= ?
+       ;; ⏎ for "shift"?
        (?≡ ("is" python))
        (?≢ ("is not" python))
        (?≤ ("<=" ,@all))
@@ -238,8 +243,6 @@ expected by `pretty-patterns'"
            ("()" ,@mley))
        (?␣ ("q( )" perl))		; can't get every possibility.
        (?ϵ ("q()" perl))
-       (?‴ ("\"\"\"" python)	   ; mainly to prevent conflicts with ""
-	   ("'''" python))
        (?≟ ("==" ,@all))	   ; so what, having fun.
        (?… ("..." scheme perl))	; perl6  maybe ⋰ to differentiate from .. ?
        (?‥ (".." perl))		; maybe hard to read
@@ -376,13 +379,21 @@ relevant buffer(s)."
   ;; Format: same as for patterns:
   ;; (glyph (regexp mode...) ... )
   (pretty-compile-patterns
-  '((?∙ ("\\w\\(\\.\\)[[:alpha:]_]" python))
+  '((?∙ (".\\(\\.\\)[[:alpha:]_]" python java))
     (?⁑ ("\\(?:\\s.\\|\\s(\\)\\s-*\\(\\*\\*\\)" python)) ; general enough?
     ;; Don't work at the beginning of a line, alas
     (?␣ (".\\s-*\\(?2:\\(?1:['\"]\\) \\1\\)" perl python c c++ sh java))
+    ;; Order apparently matters: looks like these need to be above ""
+    (?‴ ("\\(?:^\\|.\\)?\\s-*\\(\"\"\"\\).*" python))
+    (?‴ ("\\(?:^\\|.\\)?\\s-*\\('''\\).*" python))
     (?ϵ (".\\s-*\\(?2:\\(?1:['\"]\\)\\1\\)" perl python c c++ sh java))
     (?⏨ ("[0-9.]+\\(e\\)[-+]?[0-9]+" perl python c c++ java)) ;exponent
     )))
+
+;; Note:
+;; An interesting bug discovered, in python-mode with the empty-string.
+;; The string +[''] does not replace with the epsilon, but change that
+;; + sign to other symbols... some work (symbol syntax?), some don't...
 
 (defun pretty-regexp (regexp glyph)
   "Replace REGEXP with GLYPH in buffer."
