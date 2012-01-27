@@ -17,4 +17,4 @@ Example
 
 There's a dummy python program (rotten programming, barely grammatical, but shows off a lot of the substitions) in `python-sample.py`, which when rendered on my computer looks like this:
 
-![Image](python-sample.png)
+![Image](http://github.com/clsn/pretty-mode.el/blob/master/python-sample.png?raw=true)
