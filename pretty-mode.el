@@ -38,6 +38,9 @@
 	 (last (match-end 0))
 	 (start (match-beginning lastgp))
 	 (end (match-end lastgp))
+	 (notfaces '(font-lock-doc-face 
+		     font-lock-string-face font-lock-comment-face
+		     font-lock-variable-name-face))
          (syntax (char-syntax (char-after start))))
     ;; Can I find a way to let this allow ' ' and " " through?
     ;; (quoted strings are usually excluded)
@@ -50,11 +53,12 @@
 	   (memq (char-syntax (char-before first)) '(?. ?\\)))
 	 (and				; first AND last must be in quotes
 	  (memq (get-text-property first 'face)
-		'(font-lock-doc-face font-lock-string-face
-				     font-lock-comment-face))
-	  (memq (get-text-property last 'face)
-		'(font-lock-doc-face font-lock-string-face
-				     font-lock-comment-face))))
+		notfaces)
+	  ;; I *think* we need to look just BEFORE last.
+	  ;; Hope that doesn't confuse more stuff. But without it,
+	  ;; $cmp in perl gets composed.  last must be just after the pattern
+	  (memq (get-text-property (1- last) 'face)
+		notfaces)))
 	(remove-text-properties start end '(composition))
       ;; regexps only have a single entry in their "alist", and
       ;; matching it will fail anyway.  So just take the car.
@@ -212,7 +216,9 @@ expected by `pretty-patterns'"
        ;; ≅ looks too much like ≡; bummer.  Or I'd use it for =~ in perl.
        ;; maybe ∝ for that?
        ;; ≗ ≜ ≞ ? Δ for change... m for match/modify...?
-       (?≜ ("=~" perl))			; ?? ⩳ ?  Need something for !~ too
+       ;; ∌∋∍
+       (?∋ ("=~" perl))			; ∍ is better, but no negated version
+       (?∌ ("!~" perl))
        (?∷ ("::" perl))			; Unless there's something cooler.
        ;; ⊲⊳⊰⊱≺≻≈ for gt/lt/eq?
        ;; ≎⇔⋛ʭЖж for eq? cmp?
@@ -224,7 +230,7 @@ expected by `pretty-patterns'"
        (?≽ ("ge" perl))  ; Oops.  Note that /ge is not uncommon in s///
        (?≈ ("eq" perl))			; Too close to = ? ⋈ instead?
        (?≉ ("ne" perl))
-       (?× ("x" perl))
+       (?× ("x" perl))   ; gets triggered with $x.
        ;; ≙≚ for &= and |= ?
        ;; ⏎, ⏏ for "shift"?
        (?≡ ("is" python))
@@ -385,6 +391,8 @@ relevant buffer(s)."
     ;; Don't work at the beginning of a line, alas
     (?␣ (".\\s-*\\(?2:\\(?1:['\"]\\) \\1\\)" perl python c c++ sh java))
     ;; Order apparently matters: looks like these need to be above ""
+    ;; Sometimes it looks like we need to have _something_ after the quotes
+    ;; to trigger this.  Whitespace is enough.
     (?‴ ("\\(?:^\\|.\\)?\\s-*\\(\"\"\"\\).*" python))
     (?‴ ("\\(?:^\\|.\\)?\\s-*\\('''\\).*" python))
     (?ϵ (".\\s-*\\(?2:\\(?1:['\"]\\)\\1\\)" perl python c c++ sh java))
