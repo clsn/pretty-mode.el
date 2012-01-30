@@ -212,26 +212,27 @@ expected by `pretty-patterns'"
        ;; ≅ looks too much like ≡; bummer.  Or I'd use it for =~ in perl.
        ;; maybe ∝ for that?
        ;; ≗ ≜ ≞ ? Δ for change... m for match/modify...?
-       (?≜ ("=~" perl))			; ?? ⩳ ?
+       (?≜ ("=~" perl))			; ?? ⩳ ?  Need something for !~ too
        (?∷ ("::" perl))			; Unless there's something cooler.
-       ;; ⊰⊱≺≻≈ for gt/lt/eq?
-       ;; ≎⇔⋛ for eq? cmp?
+       ;; ⊲⊳⊰⊱≺≻≈ for gt/lt/eq?
+       ;; ≎⇔⋛ʭЖж for eq? cmp?
+       (?ж ("cmp" perl))		;looks a little like >< signs.
        (?⋚ ("<=>" perl))
-       ;; ≺≻≼≽ aren't good enough I think.
-       (?⊲ ("lt" perl))
-       (?⊳ ("gt" perl))
-       (?⊴ ("le" perl))
-       (?⊵ ("ge" perl))
+       (?≺ ("lt" perl))
+       (?≻ ("gt" perl))
+       (?≼ ("le" perl))
+       (?≽ ("ge" perl))  ; Oops.  Note that /ge is not uncommon in s///
        (?≈ ("eq" perl))			; Too close to = ? ⋈ instead?
        (?≉ ("ne" perl))
+       (?× ("x" perl))
        ;; ≙≚ for &= and |= ?
-       ;; ⏎ for "shift"?
+       ;; ⏎, ⏏ for "shift"?
        (?≡ ("is" python))
        (?≢ ("is not" python))
        (?≤ ("<=" ,@all))
        (?≥ (">=" ,@all))
        (?← ("<-" ,@mley ess))
-       (?➛ ("->" ,@mley ess c c++ perl))
+       (?➔ ("->" ,@mley ess c c++ perl)) ; or just → ?
        (?◇ ("<>" perl))
        (?↑ ("\\^" tuareg))
        (?⇒ ("=>" sml perl ruby haskell))
