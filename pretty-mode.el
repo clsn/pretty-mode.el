@@ -57,8 +57,19 @@
 	  ;; I *think* we need to look just BEFORE last.
 	  ;; Hope that doesn't confuse more stuff. But without it,
 	  ;; $cmp in perl gets composed.  last must be just after the pattern
+	  ;; Aha, that gets in the way of a closing ''', doesn't it?
+	  ;; I'm starting to think I'm going to need to special-case 
+	  ;; that somehow.
 	  (memq (get-text-property (1- last) 'face)
-		notfaces)))
+		notfaces)
+	  ;; Special-case hack!!
+	  ;; Uncomment only if you want it. It makes matches that are
+	  ;; all quotes go through despite other issues.  It is expressly
+	  ;; there just so we can diddle with python's triple-quotes, 
+	  ;; a dubious goal at best.  Note that this will therefore affect
+	  ;; them *even when they are quoted or commented*.
+	  ;; (not (string-match "^['\"]*$" (match-string lastgp)))
+	  ))
 	(remove-text-properties start end '(composition))
       ;; regexps only have a single entry in their "alist", and
       ;; matching it will fail anyway.  So just take the car.
@@ -219,7 +230,7 @@ expected by `pretty-patterns'"
        ;; ∌∋∍
        (?∋ ("=~" perl))			; ∍ is better, but no negated version
        (?∌ ("!~" perl))
-       (?∷ ("::" perl))			; Unless there's something cooler.
+       (?∷ ("::" perl))
        ;; ⊲⊳⊰⊱≺≻≈ for gt/lt/eq?
        ;; ≎⇔⋛ʭЖж for eq? cmp?
        (?ж ("cmp" perl))		;looks a little like >< signs.
@@ -230,7 +241,7 @@ expected by `pretty-patterns'"
        (?≽ ("ge" perl))  ; Oops.  Note that /ge is not uncommon in s///
        (?≈ ("eq" perl))			; Too close to = ? ⋈ instead?
        (?≉ ("ne" perl))
-       (?× ("x" perl))   ; gets triggered with $x.
+       (?× ("x" perl))
        ;; ≙≚ for &= and |= ?
        ;; ⏎, ⏏ for "shift"?
        (?≡ ("is" python))
@@ -347,9 +358,10 @@ expected by `pretty-patterns'"
 ;;;        ("\\<not\\>"     lisp emacs-lisp scheme haskell sml))
 	   ("not" python perl))
        ;; These?  Probably dumb. ⊨ (TRUE) doesn't look true enough.
-       (?■ ("True" python perl))
+       (?■ ("True" python perl))	; ☑ and ☐/☒ aren't distinct enough.
        (?□ ("False" python perl))
-
+       (?◩ ("bool" python)
+	   ("Bool" perl))
        )))
     "*List of pretty patterns.
 
@@ -393,8 +405,7 @@ relevant buffer(s)."
     ;; Order apparently matters: looks like these need to be above ""
     ;; Sometimes it looks like we need to have _something_ after the quotes
     ;; to trigger this.  Whitespace is enough.
-    (?‴ ("\\(?:^\\|.\\)?\\s-*\\(\"\"\"\\).*" python))
-    (?‴ ("\\(?:^\\|.\\)?\\s-*\\('''\\).*" python))
+    (?‴ ("\\(?:^\\|.\\)?\\s-*\\(\"\"\"\\|'''\\)" python))
     (?ϵ (".\\s-*\\(?2:\\(?1:['\"]\\)\\1\\)" perl python c c++ sh java))
     (?⏨ ("[0-9.]+\\(e\\)[-+]?[0-9]+" perl python c c++ java)) ;exponent
     )))
