@@ -68,7 +68,7 @@
 	  ;; there just so we can diddle with python's triple-quotes, 
 	  ;; a dubious goal at best.  Note that this will therefore affect
 	  ;; them *even when they are quoted or commented*.
-	  ;; (not (string-match "^['\"]*$" (match-string lastgp)))
+	  (not (string-match "^['\"]*$" (match-string lastgp)))
 	  ))
 	(remove-text-properties start end '(composition))
       ;; regexps only have a single entry in their "alist", and
