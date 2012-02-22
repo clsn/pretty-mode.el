@@ -230,7 +230,7 @@ expected by `pretty-patterns'"
        ;; ∌∋∍
        (?∋ ("=~" perl))			; ∍ is better, but no negated version
        (?∌ ("!~" perl))
-       (?∷ ("::" perl))
+       (?∷ ("::" perl c++))
        ;; ⊲⊳⊰⊱≺≻≈ for gt/lt/eq?
        ;; ≎⇔⋛ʭЖж for eq? cmp?
        (?ж ("cmp" perl))		;looks a little like >< signs.
@@ -276,7 +276,7 @@ expected by `pretty-patterns'"
        (?∉ ("not in" python))
        (?√ ("sqrt" ,@all))
        (?∑ ("sum" python))
-       (?ℤ ("int" python))		; ☺
+       (?ℤ ("int" python c c++ java))		; ☺
        (?ℝ ("float" python))
        (?ℂ ("complex" python))
 ;;;    (?⅀ ("str" python))    ; too obscure
@@ -361,6 +361,7 @@ expected by `pretty-patterns'"
        (?■ ("True" python perl))	; ☑ and ☐/☒ aren't distinct enough.
        (?□ ("False" python perl))
        (?◩ ("bool" python)
+	   ("boolean" java)
 	   ("Bool" perl))
        )))
     "*List of pretty patterns.
