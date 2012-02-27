@@ -309,18 +309,17 @@ expected by `pretty-patterns'"
            ("^n" octave haskell))
 
 ; I like these, but they'll never work in practice. (will they?)
-; Oh, let's try just [0], since that's commonly used.
        (?₀ ("[0]" ,@c-like))
 ; dumb idea, but I have to at least play with it.
     ;;     ("(0)" octave)
     ;;     (".(0)" tuareg))
-    ;; (?₁ ("[1]" ,@c-like)
+       (?₁ ("[1]" ,@c-like))
     ;;     ("(1)" octave)
     ;;     (".(1)" tuareg))
-    ;; (?₂ ("[2]" ,@c-like)
+       (?₂ ("[2]" ,@c-like))
     ;;     ("(2)" octave)
     ;;     (".(2)" tuareg))
-    ;; (?₃ ("[3]" ,@c-like)
+       (?₃ ("[3]" ,@c-like))
     ;;     ("(3)" octave)
     ;;     (".(3)" tuareg))
     ;; (?₄ ("[4]" ,@c-like)
