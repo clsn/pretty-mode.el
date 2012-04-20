@@ -224,12 +224,16 @@ expected by `pretty-patterns'"
            ("~=" octave)
            ("/=" haskell emacs-lisp))
        ;; How about ⧺ for ++ ?  bleah.
-       ;; ≅ looks too much like ≡; bummer.  Or I'd use it for =~ in perl.
+       ;; ≅ looks too much like ≡ (in my font); bummer.  
+       ;; Or I'd use it for =~ in perl.
        ;; maybe ∝ for that?
        ;; ≗ ≜ ≞ ? Δ for change... m for match/modify...?
        ;; ∌∋∍
-       (?∋ ("=~" perl))			; ∍ is better, but no negated version
-       (?∌ ("!~" perl))
+       ;; Eh, I'll use it anyway.
+       ;; (?∋ ("=~" perl))	      ; ∍ is better, but no negated version
+       ;; (?∌ ("!~" perl))
+       (?≅ ("=~" perl))
+       (?≇ ("!~" perl))
        (?∷ ("::" perl c++))
        ;; ⊲⊳⊰⊱≺≻≈ for gt/lt/eq?
        ;; ≎⇔⋛ʭЖж for eq? cmp?
@@ -346,12 +350,12 @@ expected by `pretty-patterns'"
    
 ;;;    (?∧ ("\\<And\\>"     emacs-lisp lisp python)
 ;;;        ("\\<andalso\\>" sml)
-       (?⋀ ("and" python perl)) ;careful not to conflate or and || in perl.
-;;;	   ("&&"            c c++ perl haskell))
+       (?⋀ ("and" python perl) ;careful not to conflate or and || in perl.
+	   ("&&"            c c++ haskell))
 ;;;    (?∨ ("\\<or\\>"      emacs-lisp lisp)
-       (?⋁ ("or" python perl))  ; N-ARY LOGICAL OR looks less like v
+       (?⋁ ("or" python perl)  ; N-ARY LOGICAL OR looks less like v
 ;;;        ("\\<orelse\\>"  sml)
-;;;	   ("||"            c c++ perl haskell))
+	   ("||"            c c++ perl haskell))
        (?⊻ ("xor" perl))
        (?¬ ("!"       c c++ perl sh)
 ;;;        ("\\<not\\>"     lisp emacs-lisp scheme haskell sml))
