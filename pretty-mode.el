@@ -269,7 +269,8 @@ expected by `pretty-patterns'"
        (?… ("..." scheme perl))	; perl6  maybe ⋰ to differentiate from .. ?
        (?‥ (".." perl))		; maybe hard to read
 ;;;    (?∀ ("List.for_all" tuareg))
-       (?∀ ("all" tuareg perl python))		; perl6
+       (?∀ ("all" tuareg perl python)		; perl6
+	   ("foreach" perl))			; It makes sense!
 ;;;    (?∃ ("List.exists" tuareg))
        (?∃ ("any" perl python))		; perl6
        (?∄ ("none" perl))		; perl6
@@ -284,6 +285,10 @@ expected by `pretty-patterns'"
        (?ℝ ("float" python))
        (?ℂ ("complex" python))
 ;;;    (?⅀ ("str" python))    ; too obscure
+;;; Variable names in Perl are immune to prettifying, and that's probably
+;;; as it should be MOSTLY (so $x doesn't become $×).  But maybe for the
+;;; Greek letters it's different?  It'll eat the $ also, unless I make them
+;;; regexps.  I'll only do one or two $pi.
        (?α ("alpha" ,@all)
            ("'a" ,@mley))
        (?β ("beta" ,@all)
@@ -292,7 +297,8 @@ expected by `pretty-patterns'"
            ("'c" ,@mley))
        (?Δ ("delta" ,@all)
            ("'d" ,@mley))
-       (?ε ("epsilon" ,@all))
+       (?ε ("epsilon" ,@all)
+	   ("$epsilon" perl))
        (?θ ("theta" ,@all))
        (?λ ("lambda" ,@all)
 ;;;        ("case-\\(lambda\\)" scheme)
@@ -300,6 +306,7 @@ expected by `pretty-patterns'"
            ("fun" tuareg)
            ("\\" haskell))
        (?π ("pi" ,@all)
+	   ("$pi" perl)
            ("M_PI" c c++))
        (?τ ("tau" ,@all))
        (?φ ("phi" ,@all))
