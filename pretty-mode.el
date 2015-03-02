@@ -2,18 +2,18 @@
 ;;; -*- coding: utf-8 -*-
 
 ;;; Commentary:
-;; 
+;;
 ;; Minor mode for redisplaying parts of the buffer as pretty symbols
 ;; originally modified from Trent Buck's version at http://paste.lisp.org/display/42335,2/raw
 ;; Also includes code from `sml-mode'
 ;; See also http://www.emacswiki.org/cgi-bin/wiki/PrettyLambda
-;; 
+;;
 ;; Released under the GPL. No implied warranties, etc. Use at your own risk.
 ;; Arthur Danskin <arthurdanskin@gmail.com>, March 2008
 ;;
 ;; to install:
 ;; (require 'pretty-mode)
-;; and 
+;; and
 ;; (global-pretty-mode 1)
 ;; or
 ;; (add-hook 'my-pretty-language-hook 'turn-on-pretty-mode)
@@ -38,15 +38,15 @@
 	 (last (match-end 0))
 	 (start (match-beginning lastgp))
 	 (end (match-end lastgp))
-	 (notfaces '(font-lock-doc-face 
+	 (notfaces '(font-lock-doc-face
 		     font-lock-string-face font-lock-comment-face
 		     font-lock-variable-name-face))
          (syntax (char-syntax (char-after start))))
     ;; Can I find a way to let this allow ' ' and " " through?
     ;; (quoted strings are usually excluded)
     ;; Can do it using the regexps, to catch a first/last that aren't quoted.
-    (if 
-	(or 
+    (if
+	(or
 	 (if (memq syntax pretty-syntax-types)
 	     (or (memq (char-syntax (char-before first)) pretty-syntax-types)
 		 (memq (char-syntax (char-after last)) pretty-syntax-types))
@@ -58,14 +58,14 @@
 	  ;; Hope that doesn't confuse more stuff. But without it,
 	  ;; $cmp in perl gets composed.  last must be just after the pattern
 	  ;; Aha, that gets in the way of a closing ''', doesn't it?
-	  ;; I'm starting to think I'm going to need to special-case 
+	  ;; I'm starting to think I'm going to need to special-case
 	  ;; that somehow.
 	  (memq (get-text-property (1- last) 'face)
 		notfaces)
 	  ;; Special-case hack!!
 	  ;; Uncomment only if you want it. It makes matches that are
 	  ;; all quotes go through despite other issues.  It is expressly
-	  ;; there just so we can diddle with python's triple-quotes, 
+	  ;; there just so we can diddle with python's triple-quotes,
 	  ;; a dubious goal at best.  Note that this will therefore affect
 	  ;; them *even when they are quoted or commented*.
 	  (not (string-match "^['\"]*$" (match-string lastgp)))
@@ -123,7 +123,7 @@ with a symbol"
     (when (and regexp glyph)
       `((,regexp
 	 (0 (pretty-font-lock-compose-symbol '((,regexp . ,glyph)))))))))
-  
+
 (defun pretty-keywords (&optional mode)
   "Return the font-lock keywords for MODE, or the current mode if
 MODE is nil. Return nil if there are no keywords."
@@ -147,7 +147,7 @@ pretty-keywords"
 			    (assoc mode pretty-interaction-mode-alist))
 			   pretty-regexp-patterns)))))
     (mapcar 'pretty-font-lock-regexp kres)))
-	 
+
 
 (defgroup pretty nil "Minor mode for replacing text with symbols "
   :group 'faces)
@@ -164,7 +164,7 @@ displayed as λ in lisp modes."
   (if pretty-mode
       (progn
         (font-lock-add-keywords nil (pretty-keywords) t)
-	(mapcar (lambda (x) (font-lock-add-keywords nil x t)) 
+	(mapcar (lambda (x) (font-lock-add-keywords nil x t))
 		(pretty-key-regexps))
         (font-lock-fontify-buffer))
     (font-lock-remove-keywords nil (pretty-keywords))
@@ -202,7 +202,7 @@ expected by `pretty-patterns'"
                       (let* ((mode (intern (concat (symbol-name mode)
                                                    "-mode")))
                              (assoc-pair (assoc mode pretty-patterns))
-                            
+
                              (entry (cons regexp glyph)))
                         (if assoc-pair
                             (push entry (cdr assoc-pair))
@@ -224,7 +224,7 @@ expected by `pretty-patterns'"
            ("~=" octave)
            ("/=" haskell emacs-lisp))
        ;; How about ⧺ for ++ ?  bleah.
-       ;; ≅ looks too much like ≡ (in my font); bummer.  
+       ;; ≅ looks too much like ≡ (in my font); bummer.
        ;; Or I'd use it for =~ in perl.
        ;; maybe ∝ for that?
        ;; ≗ ≜ ≞ ? Δ for change... m for match/modify...?
@@ -277,13 +277,16 @@ expected by `pretty-patterns'"
        (?𝟙 ("one" perl))		; perl6
        (?∈ ("in" python))
 ;;;    (?∈ ("List.mem" tuareg)
-;;;        ("member" ,@lispy))       
+;;;        ("member" ,@lispy))
        (?∉ ("not in" python))
        (?√ ("sqrt" ,@all))
        (?∑ ("sum" python))
        (?ℤ ("int" python c c++ java))		; ☺
-       (?ℝ ("float" python))
+       (?ℝ ("float" python)
+	   ("double" c c++))
        (?ℂ ("complex" python))
+       (?ℜ ("real" python))
+       (?ℑ ("imag" python))
 ;;;    (?⅀ ("str" python))    ; too obscure
 ;;; Variable names in Perl are immune to prettifying, and that's probably
 ;;; as it should be MOSTLY (so $x doesn't become $×).  But maybe for the
@@ -354,7 +357,7 @@ expected by `pretty-patterns'"
 ;;;    (?⋂ "\\<intersection\\>"   (,@lispen))
 ;;;    (?⋃ "\\<union\\>"          (,@lispen))
 
-   
+
 ;;;    (?∧ ("\\<And\\>"     emacs-lisp lisp python)
 ;;;        ("\\<andalso\\>" sml)
        (?⋀ ("and" python perl) ;careful not to conflate or and || in perl.
@@ -368,11 +371,41 @@ expected by `pretty-patterns'"
 ;;;        ("\\<not\\>"     lisp emacs-lisp scheme haskell sml))
 	   ("not" python perl))
        ;; These?  Probably dumb. ⊨ (TRUE) doesn't look true enough.
-       (?■ ("True" python perl))	; ☑ and ☐/☒ aren't distinct enough.
-       (?□ ("False" python perl))
+       (?■ ("True" python perl)	   ; ☑ and ☐/☒ aren't distinct enough.
+	   ("TRUE" c c++))
+       (?□ ("False" python perl)
+	   ("FALSE" c c++))
        (?◩ ("bool" python)
 	   ("boolean" java)
 	   ("Bool" perl))
+       ;; Just more stupid things...
+       (?⌘ ("#" c c++))
+       (?‡ ("++" c c++ java))
+       (?⟅ ("/*" c c++))
+       (?⟆ ("*/" c c++))
+       ; (?⦃ ("/*" c c++))		;Or is this better?
+       ; (?⦄ ("*/" c c++))
+       ;; SOME options for // comment:
+       ;; ⍝ <- APL comment char I think.  (Lamp).  Looks like a thumb.
+       ;; ⌰ <- RUNOUT, looks like //
+       ;; ☛
+       ;; ¶
+       ;; »
+       ;; ⑊
+       ;; ⫽
+       ;; ⧘ or ⧚ etc.  Various braces and brackets...
+       ;; Maybe use them for # comments in sh perl and python etc.
+       (?» ("//" c c++ java))
+       (?» ("#" python perl sh))
+       (?ℓ ("l" ,@all))
+       (?≬ ("()" ,@all))
+       (?∎ ("void" c c++ java))		; Too close to TRUE? Probably.
+       ;; (?⨾ (";" c c++ perl java))
+       (?≙ ("&=" c c++ java perl python))
+       (?≚ ("|=" c c++ java perl python))
+       (?⩲ ("+=" c c++ java perl python))
+       (?⩮ ("*=" c c++ java perl python))
+       ;; (?💤 ("pass" python))
        )))
     "*List of pretty patterns.
 
@@ -391,11 +424,11 @@ relevant buffer(s)."
    mode (mapcar (lambda (kw) `(,(car kw)
                           (0 (prog1 nil
 			       ;; Use len(match-data)/2-1 to get the last group
-                               (compose-region (match-beginning 
-						(1- (/ 
+                               (compose-region (match-beginning
+						(1- (/
 						     (length (match-data)) 2)))
                                                (match-end
-						(1- (/ 
+						(1- (/
 						     (length (match-data)) 2)))
                                                ,(cdr kw))))))
                 keywords)))
@@ -409,13 +442,23 @@ relevant buffer(s)."
   ;; Format: same as for patterns:
   ;; (glyph (regexp mode...) ... )
   (pretty-compile-patterns
-  '((?∙ (".\\(\\.\\)[[:alpha:]_]" python java))
-    (?⁑ ("\\(?:\\s.\\|\\s(\\)\\s-*\\(\\*\\*\\)" python)) ; general enough?
+  '((?∙ (".\\(\\.\\)[[:alpha:]_]" python java c c++))
+    (?ⅉ ("[[:digit:]]+\\(j\\)" python))
+    (?⁑ ("\\(?:\\s.\\|\\s(\\)\\s-*\\(\\*\\*\\)" python c)) ; general enough?
     ;; Don't work at the beginning of a line, alas
-    (?␣ (".\\s-*\\(?2:\\(?1:['\"]\\) \\1\\)" perl python c c++ sh java))
+    ;; Strings different from chars in C!
+    (?⍽ (".\\s-*\\(?2:\\(?1:[\"]\\) \\1\\)" c c++)) ; *string* space.
+    (?↫ (".\\s-*\\(?2:\\(?1:[\"]\\)\\\\r\\1\\)" c c++)) ; c "\n" _string_
+    (?↩ (".\\s-*\\(?2:\\(?1:[\"]\\)\\\\n\\1\\)" c c++)) ; "\r"
     ;; Order apparently matters: looks like these need to be above ""
     ;; Sometimes it looks like we need to have _something_ after the quotes
     ;; to trigger this.  Whitespace is enough.
+    ;; Some of these are the same for strs and chars.  Some are actually
+    ;; conflicted, I should make up my mind.
+    (?▯ (".\\s-*\\(?2:\\(?1:['\"]\\)\\\\0\\1\\)" c c++)) ; ∎? ▯? ⌷? null char
+    (?⇥ (".\\s-*\\(?2:\\(?1:['\"]\\)\\\\t\\1\\)" c c++))
+    (?↵ (".\\s-*\\(?2:\\(?1:['\"]\\)\\\\r\\1\\)" c c++))
+    (?↲ (".\\s-*\\(?2:\\(?1:['\"]\\)\\\\n\\1\\)" c c++)) ; and they look alike!
     (?‴ ("\\(?:^\\|.\\)?\\s-*\\(\"\"\"\\|'''\\)" python))
     (?ϵ (".\\s-*\\(?2:\\(?1:['\"]\\)\\1\\)" perl python c c++ sh java))
     (?⏨ ("[0-9.]+\\(e\\)[-+]?[0-9]+" perl python c c++ java)) ;exponent
@@ -428,7 +471,7 @@ relevant buffer(s)."
 
 (defun pretty-regexp (regexp glyph)
   "Replace REGEXP with GLYPH in buffer."
-  (interactive "MRegexp to replace: 
+  (interactive "MRegexp to replace:
 MCharacter to replace with: ")
   (pretty-add-keywords nil `((,regexp . ,(string-to-char glyph))))
   (font-lock-fontify-buffer))
