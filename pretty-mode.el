@@ -25,6 +25,10 @@
 ;; and not just strings, and moreover for the replaced bit to be only
 ;; part of the regexp.
 
+;; Of course, now there's prettify-symbols-mode that comes with emacs,
+;; which does much the same, but I don't think it can handle regexps like
+;; we do here.
+
 ;;; Code:
 (require 'cl)
 
@@ -271,6 +275,7 @@ expected by `pretty-patterns'"
        (?‥ (".." perl))		; maybe hard to read
 ;;;    (?∀ ("List.for_all" tuareg))
        (?∀ ("all" tuareg perl python)		; perl6
+	   ("for" python)			; ???
 	   ("foreach" perl))			; It makes sense!
 ;;;    (?∃ ("List.exists" tuareg))
        (?∃ ("any" perl python))		; perl6
@@ -379,6 +384,7 @@ expected by `pretty-patterns'"
        (?◩ ("bool" python)
 	   ("boolean" java)
 	   ("Bool" perl))
+       (?❢ ("assert" python))
        ;; Just more stupid things...
        (?⌘ ("#" c c++))
        (?‡ ("++" c c++ java))
@@ -408,6 +414,7 @@ expected by `pretty-patterns'"
        (?⩮ ("*=" c c++ java perl python))
        (?∇ ("def" python))		; APL creeping back
        ;; (?💤 ("pass" python))
+       (?⚠ ("raise" python))
        )))
     "*List of pretty patterns.
 
