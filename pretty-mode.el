@@ -25,6 +25,10 @@
 ;; and not just strings, and moreover for the replaced bit to be only
 ;; part of the regexp.
 
+;; Of course, now there's prettify-symbols-mode that comes with emacs,
+;; which does much the same, but I don't think it can handle regexps like
+;; we do here.
+
 ;;; Code:
 (require 'cl)
 
@@ -255,7 +259,8 @@ expected by `pretty-patterns'"
        (?← ("<-" ,@mley ess))
        (?➔ ("->" ,@mley ess c c++ perl)) ; or just → ?
        (?◇ ("<>" perl))
-       (?↑ ("\\^" tuareg))
+       (?↑ ("\\^" tuareg)
+	   ("**" python))
        (?⇒ ("=>" sml perl ruby haskell))
        ; (?⟹ ("=>" sml perl ruby haskell)) ;too long
        (?∅ ("nil" emacs-lisp ruby)
@@ -270,6 +275,7 @@ expected by `pretty-patterns'"
        (?‥ (".." perl))		; maybe hard to read
 ;;;    (?∀ ("List.for_all" tuareg))
        (?∀ ("all" tuareg perl python)		; perl6
+	   ("for" python)			; ???
 	   ("foreach" perl))			; It makes sense!
 ;;;    (?∃ ("List.exists" tuareg))
        (?∃ ("any" perl python))		; perl6
@@ -378,6 +384,23 @@ expected by `pretty-patterns'"
        (?◩ ("bool" python)
 	   ("boolean" java)
 	   ("Bool" perl))
+       (?❢ ("assert" python))
+       (?⌷ ("[]" python))		; ⎕⍞⍁⌽ ? APL gives a lot of options.
+       ;; (?⦰ ("set()" python)) ; nullset; already using ∅ for None.  But font is lacking it.  Maybe ⍉?  Probably confusing anyway.
+       (?⍉ ("set()" python))
+       ;; Also should do frozenset(), {} (empty dict)... Oh, () (empty tuple)
+       ;; is already handled below.
+       (?⋯ ("range" python))
+       (?⍈ ("next" python))		; These APL boxes could be good...
+       (?⊕ ("__add__" python))
+       (?⊖ ("__sub__" python))
+       (?⊗ ("__mul__" python))
+       (?⊘ ("__div__" python))		; __truediv__ ?
+       (?⊜ ("__eq__" python))
+       (?⍄ ("__gt__" python))		; didn't find these circled.
+       (?⍃ ("__lt__" python))		; ⩻ might be better, but not in font.
+       (?⍐ ("__pow__" python))
+       (?◪ ("__bool__" python))		;not the same as ◩ bool!
        ;; Just more stupid things...
        (?⌘ ("#" c c++))
        (?‡ ("++" c c++ java))
@@ -405,7 +428,9 @@ expected by `pretty-patterns'"
        (?≚ ("|=" c c++ java perl python))
        (?⩲ ("+=" c c++ java perl python))
        (?⩮ ("*=" c c++ java perl python))
+       (?∇ ("def" python))		; APL creeping back
        ;; (?💤 ("pass" python))
+       (?⚠ ("raise" python))
        )))
     "*List of pretty patterns.
 
