@@ -255,7 +255,8 @@ expected by `pretty-patterns'"
        (?← ("<-" ,@mley ess))
        (?➔ ("->" ,@mley ess c c++ perl)) ; or just → ?
        (?◇ ("<>" perl))
-       (?↑ ("\\^" tuareg))
+       (?↑ ("\\^" tuareg)
+	   ("**" python))
        (?⇒ ("=>" sml perl ruby haskell))
        ; (?⟹ ("=>" sml perl ruby haskell)) ;too long
        (?∅ ("nil" emacs-lisp ruby)
@@ -405,6 +406,7 @@ expected by `pretty-patterns'"
        (?≚ ("|=" c c++ java perl python))
        (?⩲ ("+=" c c++ java perl python))
        (?⩮ ("*=" c c++ java perl python))
+       (?∇ ("def" python))		; APL creeping back
        ;; (?💤 ("pass" python))
        )))
     "*List of pretty patterns.
