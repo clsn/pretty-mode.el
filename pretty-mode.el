@@ -385,6 +385,22 @@ expected by `pretty-patterns'"
 	   ("boolean" java)
 	   ("Bool" perl))
        (?❢ ("assert" python))
+       (?⌷ ("[]" python))		; ⎕⍞⍁⌽ ? APL gives a lot of options.
+       ;; (?⦰ ("set()" python)) ; nullset; already using ∅ for None.  But font is lacking it.  Maybe ⍉?  Probably confusing anyway.
+       (?⍉ ("set()" python))
+       ;; Also should do frozenset(), {} (empty dict)... Oh, () (empty tuple)
+       ;; is already handled below.
+       (?⋯ ("range" python))
+       (?⍈ ("next" python))		; These APL boxes could be good...
+       (?⊕ ("__add__" python))
+       (?⊖ ("__sub__" python))
+       (?⊗ ("__mul__" python))
+       (?⊘ ("__div__" python))		; __truediv__ ?
+       (?⊜ ("__eq__" python))
+       (?⍄ ("__gt__" python))		; didn't find these circled.
+       (?⍃ ("__lt__" python))		; ⩻ might be better, but not in font.
+       (?⍐ ("__pow__" python))
+       (?◪ ("__bool__" python))		;not the same as ◩ bool!
        ;; Just more stupid things...
        (?⌘ ("#" c c++))
        (?‡ ("++" c c++ java))
