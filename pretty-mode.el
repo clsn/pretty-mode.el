@@ -277,19 +277,24 @@ expected by `pretty-patterns'"
        (?∀ ("all" tuareg perl python)		; perl6
 	   ("for" python)			; ???
 	   ("foreach" perl))			; It makes sense!
+       ;; Maybe some sort of (up-)arrow for "return"?  Many to choose from.
+       ;; ↑←↖↗↩↪↺↻↸⇈⇑⇖⇗⇦⇫⇬⇪⇱✔➤⏎⏏
+       ;; (I tend to favor "upwards")
 ;;;    (?∃ ("List.exists" tuareg))
        (?∃ ("any" perl python))		; perl6
        (?∄ ("none" perl))		; perl6
        (?𝟙 ("one" perl))		; perl6
+       (?⁇ ("??" perl))			; perl6
+       (?‼ ("!!" perl))			; perl6
        (?∈ ("in" python))
 ;;;    (?∈ ("List.mem" tuareg)
 ;;;        ("member" ,@lispy))
        (?∉ ("not in" python))
        (?√ ("sqrt" ,@all))
        (?∑ ("sum" python))
-       (?ℤ ("int" python c c++ java))		; ☺
+       (?ℤ ("int" python ,@c-like))		; ☺
        (?ℝ ("float" python)
-	   ("double" c c++))
+	   ("double" ,@c-like))
        (?ℂ ("complex" python))
        (?ℜ ("real" python))
        (?ℑ ("imag" python))
@@ -327,6 +332,7 @@ expected by `pretty-patterns'"
            ("^3" octave haskell))
        (?ⁿ ("**n" python tuareg octave)
            ("^n" octave haskell))
+       (?☈ ("goto" c c++))
 
 ; I like these, but they'll never work in practice. (will they?)
        (?₀ ("[0]" ,@c-like))
@@ -364,34 +370,36 @@ expected by `pretty-patterns'"
 ;;;    (?⋃ "\\<union\\>"          (,@lispen))
 
 
-;;;    (?∧ ("\\<And\\>"     emacs-lisp lisp python)
+;;;    (?∧ ("\\<And\\>"     emacs-lisp lisp python))
 ;;;        ("\\<andalso\\>" sml)
-       (?⋀ ("and" python perl) ;careful not to conflate or and || in perl.
-	   ("&&"            c c++ haskell))
+       (?⋏ ("and" python perl) ;careful not to conflate or and || in perl.
+	   ("&&"            c c++ haskell java))
 ;;;    (?∨ ("\\<or\\>"      emacs-lisp lisp)
-       (?⋁ ("or" python perl)  ; N-ARY LOGICAL OR looks less like v
+       (?⋎ ("or" python perl)  ; N-ARY LOGICAL OR looks less like v
 ;;;        ("\\<orelse\\>"  sml)
-	   ("||"            c c++ perl haskell))
+	   ("||"            c c++ perl haskell java))
        (?⊻ ("xor" perl))
-       (?¬ ("!"       c c++ perl sh)
+       (?¬ ("!"       c c++ perl sh java)
 ;;;        ("\\<not\\>"     lisp emacs-lisp scheme haskell sml))
 	   ("not" python perl))
        ;; These?  Probably dumb. ⊨ (TRUE) doesn't look true enough.
        (?■ ("True" python perl)	   ; ☑ and ☐/☒ aren't distinct enough.
-	   ("TRUE" c c++))
+	   ("TRUE" c c++)
+           ("true" java))
        (?□ ("False" python perl)
-	   ("FALSE" c c++))
+	   ("FALSE" c c++)
+           ("false" java))
        (?◩ ("bool" python)
 	   ("boolean" java)
 	   ("Bool" perl))
        (?❢ ("assert" python))
-       (?⌷ ("[]" python))		; ⎕⍞⍁⌽ ? APL gives a lot of options.
+       (?⌷ ("[]" c c++ python java))   ; ⎕⍞⍁⌽ ? APL gives a lot of options.
        ;; (?⦰ ("set()" python)) ; nullset; already using ∅ for None.  But font is lacking it.  Maybe ⍉?  Probably confusing anyway.
        (?⍉ ("set()" python))
        ;; Also should do frozenset(), {} (empty dict)... Oh, () (empty tuple)
        ;; is already handled below.
        (?⋯ ("range" python))
-       (?⍈ ("next" python))		; These APL boxes could be good...
+       (?⍈ ("next" python))	; These APL boxes could be good...
        (?⊕ ("__add__" python))
        (?⊖ ("__sub__" python))
        (?⊗ ("__mul__" python))
@@ -400,14 +408,21 @@ expected by `pretty-patterns'"
        (?⍄ ("__gt__" python))		; didn't find these circled.
        (?⍃ ("__lt__" python))		; ⩻ might be better, but not in font.
        (?⍐ ("__pow__" python))
-       (?◪ ("__bool__" python))		;not the same as ◩ bool!
+       (?◪ ("__bool__" python))		; not the same as ◩ bool!
+       (?✿ ("@" python))		; decoratorate with a flower
        ;; Just more stupid things...
+       (?✘ ("break" c c++ java python)	; do these make any sense?
+	   ("last" perl))
+       (?➤ ("continue" c c++ java python) ; ?
+	   ("next" perl))		; different from python next
        (?⌘ ("#" c c++))
+       (?❴ ("{" c c++ java perl))	; Make those braces pop!
+       (?❵ ("}" c c++ java perl))
        (?‡ ("++" c c++ java))
-       (?⟅ ("/*" c c++))
-       (?⟆ ("*/" c c++))
-       ; (?⦃ ("/*" c c++))		;Or is this better?
-       ; (?⦄ ("*/" c c++))
+       (?⟅ ("/*" c c++ java))
+       (?⟆ ("*/" c c++ java))
+       ; (?⦃ ("/*" c c++ java))		;Or is this better?
+       ; (?⦄ ("*/" c c++ java))
        ;; SOME options for // comment:
        ;; ⍝ <- APL comment char I think.  (Lamp).  Looks like a thumb.
        ;; ⌰ <- RUNOUT, looks like //
@@ -422,12 +437,15 @@ expected by `pretty-patterns'"
        (?» ("#" python perl sh))
        (?ℓ ("l" ,@all))
        (?≬ ("()" ,@all))
+       (?⍗ ("this" java c++)		; ok iconography?
+           ("self" python))
        (?∎ ("void" c c++ java))		; Too close to TRUE? Probably.
        ;; (?⨾ (";" c c++ perl java))
        (?≙ ("&=" c c++ java perl python))
        (?≚ ("|=" c c++ java perl python))
        (?⩲ ("+=" c c++ java perl python))
-       (?⩮ ("*=" c c++ java perl python))
+       ;; (?⩮ ("*=" c c++ java perl python))
+       (?≛ ("*=" c c++ java perl python))
        (?∇ ("def" python))		; APL creeping back
        ;; (?💤 ("pass" python))
        (?⚠ ("raise" python))
@@ -472,18 +490,18 @@ relevant buffer(s)."
     (?⁑ ("\\(?:\\s.\\|\\s(\\)\\s-*\\(\\*\\*\\)" python c)) ; general enough?
     ;; Don't work at the beginning of a line, alas
     ;; Strings different from chars in C!
-    (?⍽ (".\\s-*\\(?2:\\(?1:[\"]\\) \\1\\)" c c++)) ; *string* space.
-    (?↫ (".\\s-*\\(?2:\\(?1:[\"]\\)\\\\r\\1\\)" c c++)) ; c "\n" _string_
-    (?↩ (".\\s-*\\(?2:\\(?1:[\"]\\)\\\\n\\1\\)" c c++)) ; "\r"
+    (?⍽ (".\\s-*\\(?2:\\(?1:[\"]\\) \\1\\)" c c++ java)) ; *string* space.
+    (?↫ (".\\s-*\\(?2:\\(?1:[\"]\\)\\\\r\\1\\)" c c++ java)) ; c "\n" _string_
+    (?↩ (".\\s-*\\(?2:\\(?1:[\"]\\)\\\\n\\1\\)" c c++ java)) ; "\r"
     ;; Order apparently matters: looks like these need to be above ""
     ;; Sometimes it looks like we need to have _something_ after the quotes
     ;; to trigger this.  Whitespace is enough.
     ;; Some of these are the same for strs and chars.  Some are actually
     ;; conflicted, I should make up my mind.
     (?▯ (".\\s-*\\(?2:\\(?1:['\"]\\)\\\\0\\1\\)" c c++)) ; ∎? ▯? ⌷? null char
-    (?⇥ (".\\s-*\\(?2:\\(?1:['\"]\\)\\\\t\\1\\)" c c++))
-    (?↵ (".\\s-*\\(?2:\\(?1:['\"]\\)\\\\r\\1\\)" c c++))
-    (?↲ (".\\s-*\\(?2:\\(?1:['\"]\\)\\\\n\\1\\)" c c++)) ; and they look alike!
+    (?⇥ (".\\s-*\\(?2:\\(?1:['\"]\\)\\\\t\\1\\)" c c++ java))
+    (?↵ (".\\s-*\\(?2:\\(?1:['\"]\\)\\\\r\\1\\)" c c++ java))
+    (?↲ (".\\s-*\\(?2:\\(?1:['\"]\\)\\\\n\\1\\)" c c++ java)) ; and they look alike!
     (?‴ ("\\(?:^\\|.\\)?\\s-*\\(\"\"\"\\|'''\\)" python))
     (?ϵ (".\\s-*\\(?2:\\(?1:['\"]\\)\\1\\)" perl python c c++ sh java))
     (?⏨ ("[0-9.]+\\(e\\)[-+]?[0-9]+" perl python c c++ java)) ;exponent
