@@ -280,6 +280,7 @@ expected by `pretty-patterns'"
        ;; Maybe some sort of (up-)arrow for "return"?  Many to choose from.
        ;; ↑←↖↗↩↪↺↻↸⇈⇑⇖⇗⇦⇫⇬⇪⇱✔➤⏎⏏
        ;; (I tend to favor "upwards")
+       (?⏏ ("return" ,@all))
 ;;;    (?∃ ("List.exists" tuareg))
        (?∃ ("any" perl python))		; perl6
        (?∄ ("none" perl))		; perl6
@@ -354,8 +355,6 @@ expected by `pretty-patterns'"
 
        (?∞ ("HUGE_VAL" c c++))
 
-;;;    (?∙ ())
-;;;    (?× ())
 ;;;    (?ₐ ("[a]" ,@c-like)
 ;;;        ("(a)" octave))
 ;;;    (?ₓ ("[x]" ,@c-like)
@@ -416,9 +415,11 @@ expected by `pretty-patterns'"
        (?➤ ("continue" c c++ java python) ; ?
 	   ("next" perl))		; different from python next
        (?⌘ ("#" c c++))
-       (?❴ ("{" c c++ java perl))	; Make those braces pop!
-       (?❵ ("}" c c++ java perl))
+       (?❰ ("{" c c++ java perl))	; Make those braces pop! ❴❵ too thin.
+       (?❱ ("}" c c++ java perl))
+       ;; (?⍰ ("<?>" java))		;??
        (?‡ ("++" c c++ java))
+       ;; "/**" for Doxygen stuff?
        (?⟅ ("/*" c c++ java))
        (?⟆ ("*/" c c++ java))
        ; (?⦃ ("/*" c c++ java))		;Or is this better?
