@@ -12,6 +12,7 @@ def func(a, b, *args, **kwargs):
         i=3*pi**2-2
         a=sqrt(4+alpha[0])
         j=map((lambda x: x.split(' ')), qll)
+        q=n // 14
         if all(j):
             m+=2
         elif any(j):

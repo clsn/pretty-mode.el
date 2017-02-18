@@ -164,7 +164,7 @@ Pretty mode builds on `font-lock-mode'. Instead of highlighting
 keywords, it replaces them with symbols. For example, lambda is
 displayed as λ in lisp modes."
   :group 'pretty
-;  :lighter " λ"
+  :lighter " λ"
   (if pretty-mode
       (progn
         (font-lock-add-keywords nil (pretty-keywords) t)
@@ -220,6 +220,7 @@ expected by `pretty-patterns'"
   (let* ((lispy '(scheme emacs-lisp lisp))
          (mley '(tuareg haskell sml))
          (c-like '(c c++ perl sh python java ess ruby))
+	 (c-justlike '(c c++ java))
          (all (append lispy mley c-like (list 'octave))))
     (pretty-compile-patterns
      `(
@@ -250,6 +251,9 @@ expected by `pretty-patterns'"
        (?≈ ("eq" perl))			; Too close to = ? ⋈ instead?
        (?≉ ("ne" perl))
        (?× ("x" perl))
+       ;; What about something for perl's sigils?  No really good choices...
+       ;; Also don't work so good when preceded by non-word chars.
+       ;; (?€ ("$" perl))      ; ₴ is good too.  ¢ £ or any other currency
        ;; ≙≚ for &= and |= ?
        ;; ⏎, ⏏ for "shift"?
        (?≡ ("is" python))
@@ -261,6 +265,7 @@ expected by `pretty-patterns'"
        (?◇ ("<>" perl))
        (?↑ ("\\^" tuareg)
 	   ("**" python))
+       (?∗ ("*" ,@all))			; U+2217 ASTERISK OPERATOR
        (?⇒ ("=>" sml perl ruby haskell))
        ; (?⟹ ("=>" sml perl ruby haskell)) ;too long
        (?∅ ("nil" emacs-lisp ruby)
@@ -271,12 +276,13 @@ expected by `pretty-patterns'"
        (?␣ ("q( )" perl))		; can't get every possibility.
        (?ϵ ("q()" perl))
        (?≟ ("==" ,@all))	   ; so what, having fun.
+       (?← ("=" ,@c-like))	   ; assignment
        (?… ("..." scheme perl))	; perl6  maybe ⋰ to differentiate from .. ?
        (?‥ (".." perl))		; maybe hard to read
 ;;;    (?∀ ("List.for_all" tuareg))
        (?∀ ("all" tuareg perl python)		; perl6
-	   ("for" python)			; ???
-	   ("foreach" perl))			; It makes sense!
+	   ("for" python)			; Hopefully not ambiguous
+	   ("foreach" perl))
        ;; Maybe some sort of (up-)arrow for "return"?  Many to choose from.
        ;; ↑←↖↗↩↪↺↻↸⇈⇑⇖⇗⇦⇫⇬⇪⇱✔➤⏎⏏
        ;; (I tend to favor "upwards")
@@ -293,7 +299,7 @@ expected by `pretty-patterns'"
        (?∉ ("not in" python))
        (?√ ("sqrt" ,@all))
        (?∑ ("sum" python))
-       (?ℤ ("int" python ,@c-like))		; ☺
+       (?ℤ ("int" ,@c-like))		; ☺
        (?ℝ ("float" python)
 	   ("double" ,@c-like))
        (?ℂ ("complex" python))
@@ -303,7 +309,7 @@ expected by `pretty-patterns'"
 ;;; Variable names in Perl are immune to prettifying, and that's probably
 ;;; as it should be MOSTLY (so $x doesn't become $×).  But maybe for the
 ;;; Greek letters it's different?  It'll eat the $ also, unless I make them
-;;; regexps.  I'll only do one or two $pi.
+;;; regexps.  I'll only do one or two.
        (?α ("alpha" ,@all)
            ("'a" ,@mley))
        (?β ("beta" ,@all)
@@ -383,16 +389,17 @@ expected by `pretty-patterns'"
 	   ("not" python perl))
        ;; These?  Probably dumb. ⊨ (TRUE) doesn't look true enough.
        (?■ ("True" python perl)	   ; ☑ and ☐/☒ aren't distinct enough.
-	   ("TRUE" c c++)
-           ("true" java))
+	   ("TRUE" c)
+           ("true" java c++))
        (?□ ("False" python perl)
-	   ("FALSE" c c++)
-           ("false" java))
-       (?◩ ("bool" python)
+	   ("FALSE" c)
+           ("false" java c++))
+       (?◩ ("bool" python c++)
 	   ("boolean" java)
 	   ("Bool" perl))
-       (?❢ ("assert" python))
-       (?⌷ ("[]" c c++ python java))   ; ⎕⍞⍁⌽ ? APL gives a lot of options.
+       (?✚ ("unsigned" c c++))		; Confusing? ➕✢ ✣ ✤ ✥ ✠
+       (?❢ ("assert" python ,@c-justlike))
+       (?⌷ ("[]" ,@c-justlike python))   ; ⎕⍞⍁⌽ ? APL gives a lot of options.
        ;; (?⦰ ("set()" python)) ; nullset; already using ∅ for None.  But font is lacking it.  Maybe ⍉?  Probably confusing anyway.
        (?⍉ ("set()" python))
        ;; Also should do frozenset(), {} (empty dict)... Oh, () (empty tuple)
@@ -410,20 +417,20 @@ expected by `pretty-patterns'"
        (?◪ ("__bool__" python))		; not the same as ◩ bool!
        (?✿ ("@" python))		; decoratorate with a flower
        ;; Just more stupid things...
-       (?✘ ("break" c c++ java python)	; do these make any sense?
+       (?✘ ("break" ,@c-justlike python)	; do these make any sense?
 	   ("last" perl))
-       (?➤ ("continue" c c++ java python) ; ?
+       (?➤ ("continue" ,@c-justlike python) ; ?
 	   ("next" perl))		; different from python next
        (?⌘ ("#" c c++))
-       (?❰ ("{" c c++ java perl))	; Make those braces pop! ❴❵ too thin.
-       (?❱ ("}" c c++ java perl))
+       (?❰ ("{" ,@c-justlike perl))	; Make those braces pop! ❴❵ too thin.
+       (?❱ ("}" ,@c-justlike perl))
        ;; (?⍰ ("<?>" java))		;??
-       (?‡ ("++" c c++ java))
+       (?‡ ("++" ,@c-justlike))
        ;; "/**" for Doxygen stuff?
-       (?⟅ ("/*" c c++ java))
-       (?⟆ ("*/" c c++ java))
-       ; (?⦃ ("/*" c c++ java))		;Or is this better?
-       ; (?⦄ ("*/" c c++ java))
+       (?⟅ ("/*" ,@c-justlike))
+       (?⟆ ("*/" ,@c-justlike))
+       ; (?⦃ ("/*" ,@c-justlike))		;Or is this better?
+       ; (?⦄ ("*/" ,@c-justlike))
        ;; SOME options for // comment:
        ;; ⍝ <- APL comment char I think.  (Lamp).  Looks like a thumb.
        ;; ⌰ <- RUNOUT, looks like //
@@ -434,22 +441,27 @@ expected by `pretty-patterns'"
        ;; ⫽
        ;; ⧘ or ⧚ etc.  Various braces and brackets...
        ;; Maybe use them for # comments in sh perl and python etc.
-       (?» ("//" c c++ java))
+       (?» ("//" ,@c-justlike))
        (?» ("#" python perl sh))
+       (?÷ ("//" python))		; integer division, py3 ⌿ ⍁ ∫ ÷
        (?ℓ ("l" ,@all))
        (?≬ ("()" ,@all))
        (?⍗ ("this" java c++)		; ok iconography?
            ("self" python))
-       (?∎ ("void" c c++ java))		; Too close to TRUE? Probably.
+       (?∎ ("void" ,@c-justlike))		; Too close to TRUE? Probably.
        ;; (?⨾ (";" c c++ perl java))
-       (?≙ ("&=" c c++ java perl python))
-       (?≚ ("|=" c c++ java perl python))
-       (?⩲ ("+=" c c++ java perl python))
-       ;; (?⩮ ("*=" c c++ java perl python))
-       (?≛ ("*=" c c++ java perl python))
-       (?∇ ("def" python))		; APL creeping back
+       (?≙ ("&=" ,@c-justlike perl python))
+       (?≚ ("|=" ,@c-justlike perl python))
+       (?⩲ ("+=" ,@c-justlike perl python))
+       ;; (?⩮ ("*=" ,@c-justlike perl python))
+       (?≛ ("*=" ,@c-justlike perl python))
+       (?∇ ("def" python)		; APL creeping back
+	   ("sub" perl))
        ;; (?💤 ("pass" python))
-       (?⚠ ("raise" python))
+       (?⚠ ("raise" python)
+	   ("throw" java c++)
+	   ("throws" java))
+       (?⊂ ("extends" java))
        )))
     "*List of pretty patterns.
 
@@ -503,6 +515,8 @@ relevant buffer(s)."
     (?⇥ (".\\s-*\\(?2:\\(?1:['\"]\\)\\\\t\\1\\)" c c++ java))
     (?↵ (".\\s-*\\(?2:\\(?1:['\"]\\)\\\\r\\1\\)" c c++ java))
     (?↲ (".\\s-*\\(?2:\\(?1:['\"]\\)\\\\n\\1\\)" c c++ java)) ; and they look alike!
+    (?␣ (".\\s-*\\(?2:\\(?1:[']\\) \\1\\)" c c++ java)
+	(".\\s-*\\(?2:\\(?1:['\"]\\) \\1\\)" python perl))
     (?‴ ("\\(?:^\\|.\\)?\\s-*\\(\"\"\"\\|'''\\)" python))
     (?ϵ (".\\s-*\\(?2:\\(?1:['\"]\\)\\1\\)" perl python c c++ sh java))
     (?⏨ ("[0-9.]+\\(e\\)[-+]?[0-9]+" perl python c c++ java)) ;exponent
