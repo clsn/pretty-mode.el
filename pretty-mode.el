@@ -421,7 +421,8 @@ expected by `pretty-patterns'"
 	   ("last" perl))
        (?➤ ("continue" ,@c-justlike python) ; ?
 	   ("next" perl))		; different from python next
-       (?⌘ ("#" c c++))
+       (?⌘ ("#" c c++)
+	   ("#+" org))		      ; org-mode controls
        (?❰ ("{" ,@c-justlike perl))	; Make those braces pop! ❴❵ too thin.
        (?❱ ("}" ,@c-justlike perl))
        ;; (?⍰ ("<?>" java))		;??
@@ -462,6 +463,14 @@ expected by `pretty-patterns'"
 	   ("throw" java c++)
 	   ("throws" java))
        (?⊂ ("extends" java))
+       (?☐ ("[ ]" org))			; checkboxes...
+       (?☒ ("[X]" org))
+       (?⊟ ("[-]" org))			; ⊡⚀⧄ ?
+       (?∷ ("::" org))
+       ;; (?∗ ("*" org))	; doesn't work because of reasons.
+       (❌ (":END:" org))
+       ;; Consider, for org:
+       ;; <<>>? <<<>>>? <>? @@? %%? []? {{{}}}? *_+=~/?
        )))
     "*List of pretty patterns.
 
@@ -520,6 +529,12 @@ relevant buffer(s)."
     (?‴ ("\\(?:^\\|.\\)?\\s-*\\(\"\"\"\\|'''\\)" python))
     (?ϵ (".\\s-*\\(?2:\\(?1:['\"]\\)\\1\\)" perl python c c++ sh java))
     (?⏨ ("[0-9.]+\\(e\\)[-+]?[0-9]+" perl python c c++ java)) ;exponent
+    (?✦ ("^\\s-*\\(?1:\\+\\)" org))
+    (?⊛ ("^\\s-+\\(?1:\\*\\)" org))	; _Plain lists_ with *
+    (?➤ ("^\\**\\(?1:\\*\\)" org))	; Maybe only in org-indent-mode?
+    (?‣ ("^\\s-*\\(?1:-\\)" org))
+    ;; Do ⒈ ⒉ ⒊ for org-mode numbered lists?  NO.
+    ;; CLOCK: ⏰⏱⏲ and other keywords?  NO.
     )))
 
 ;; Note:
