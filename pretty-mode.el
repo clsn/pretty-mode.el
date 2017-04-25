@@ -74,17 +74,19 @@
 	  ;; them *even when they are quoted or commented*.
 	  (not (string-match "^['\"]*$" (match-string lastgp)))
 	  ))
-	(remove-text-properties start end '(composition))
-      ;; regexps only have a single entry in their "alist", and
-      ;; matching it will fail anyway.  So just take the car.
-      ;; (display-message-or-buffer (pp-to-string (length alist)))
-;;;      (compose-region start end (cdr (if (> (length alist) 1)
-;;;					 (assoc (match-string lastgp) alist)
-;;;				       (car alist))))
+	(remove-text-properties start end '(display))
       (put-text-property start end 'display (cdr (if (> (length alist) 1)
-						     (assoc (match-string lastgp) alist)
-						   (car alist))))
-      (put-text-property start end 'modification-hooks '(font-lock-flush))
+                                                     (assoc (match-string lastgp) alist)
+                                                   (car alist))))
+      ;; What about stuff between a and b?  Need I worry?
+      (put-text-property start end 'modification-hooks
+                         '((lambda (a b)
+                             (let* ((inhibit-modification-hooks t)
+                                    (start (previous-single-property-change a 'display))
+                                    (end (next-single-property-change b 'display)))
+                               (remove-text-properties (or start 1)
+                                                       (or end (buffer-size))
+                                                       '(display))))))
 ;;; Uncomment these lines and redefine the function to make it actually
 ;;; change the characters!
 ;;;      (insert (char-to-string (cdr (if (> (length alist) 1)
@@ -308,7 +310,6 @@ expected by `pretty-patterns'"
 	   ("double" ,@c-like))
        ("ℂ" ("complex" python))
        ("ℜ" ("real" python))
-       ("XxXy" ("foo" ,@all))
        ("ℑ" ("imag" python))
 ;;;    ("⅀" ("str" python))    ; too obscure
 ;;; Variable names in Perl are immune to prettifying, and that's probably
@@ -453,7 +454,7 @@ expected by `pretty-patterns'"
        ("ℓ" ("l" ,@all))
        ("≬" ("()" ,@all))
        ("⍗" ("this" java c++)		; ok iconography?
-           ("self" python))
+        ("self" python))
        ("∎" ("void" ,@c-justlike))		; Too close to TRUE? Probably.
        ;; ("⨾" (";" c c++ perl java))
        ("≙" ("&=" ,@c-justlike perl python))
@@ -462,7 +463,7 @@ expected by `pretty-patterns'"
        ;; ("⩮" ("*=" ,@c-justlike perl python))
        ("≛" ("*=" ,@c-justlike perl python))
        ("∇" ("def" python)		; APL creeping back
-	   ("sub" perl))
+        ("sub" perl))
        ;; ("💤" ("pass" python))
        ("⚠" ("raise" python)
 	   ("throw" java c++)
@@ -476,6 +477,17 @@ expected by `pretty-patterns'"
        ("❌" (":END:" org))
        ;; Consider, for org:
        ;; <<>>? <<<>>>? <>? @@? %%? []? {{{}}}? *_+=~/?
+       ;;
+       ;; Multi-char substitutions!
+       ("⁺¹" ("+1" ,@all))
+       ("⁺⁰" ("+0" ,@all))
+       ("Zzz" ("pass" python))
+       ;;; Not even marked by a font-lock color, so you can't see it isn't
+       ;;; normal text.  Probably not a good idea, but that applies to a lot of this
+       ;;; file.
+       ("ever" ("(;;)" ,@c-justlike))   ; follows "for"...
+       ;;; or you could do it this way...
+       ;; ("𝑒𝑣𝑒𝑟" ("(;;)" ,@c-justlike))
        )))
     "*List of pretty patterns.
 
