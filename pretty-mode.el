@@ -468,7 +468,7 @@ expected by `pretty-patterns'"
        (?⊟ ("[-]" org))			; ⊡⚀⧄ ?
        (?∷ ("::" org))
        ;; (?∗ ("*" org))	; doesn't work because of reasons.
-       (❌ (":END:" org))
+       (?❌ (":END:" org))
        ;; Consider, for org:
        ;; <<>>? <<<>>>? <>? @@? %%? []? {{{}}}? *_+=~/?
        )))
