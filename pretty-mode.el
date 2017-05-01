@@ -75,9 +75,13 @@
 	  (not (string-match "^['\"]*$" (match-string lastgp)))
 	  ))
 	(remove-text-properties start end '(display))
-      (put-text-property start end 'display (cdr (if (> (length alist) 1)
-                                                     (assoc (match-string lastgp) alist)
-                                                   (car alist))))
+      (put-text-property start end 'display
+                         ;; Use concat to get unique strings!
+                         ;; (otherwise identical consecutive subs get lost)
+                         (concat (cdr
+                                  (if (> (length alist) 1)
+                                      (assoc (match-string lastgp) alist)
+                                    (car alist)))))
       ;; What about stuff between a and b?  Need I worry?
       (put-text-property start end 'modification-hooks
                          '((lambda (a b)
@@ -299,9 +303,9 @@ expected by `pretty-patterns'"
        ("𝟙" ("one" perl))		; perl6
        ("⁇" ("??" perl))			; perl6
        ("‼" ("!!" perl))			; perl6
-       ("∈" ("in" python))
-;;;    ("∈" ("List.mem" tuareg)
-;;;        ("member" ,@lispy))
+       ("∈" ("in" python)
+        ("memq" emacs-lisp)
+        ("member" lisp))
        ("∉" ("not in" python))
        ("√" ("sqrt" ,@all))
        ("∑" ("sum" python))
@@ -448,8 +452,8 @@ expected by `pretty-patterns'"
        ;; ⫽
        ;; ⧘ or ⧚ etc.  Various braces and brackets...
        ;; Maybe use them for # comments in sh perl and python etc.
-       ("»" ("//" ,@c-justlike))
-       ("»" ("#" python perl sh))
+       ("»" ("//" ,@c-justlike)
+        ("#" python perl sh))
        ("÷" ("//" python))		; integer division, py3 ⌿ ⍁ ∫ ÷
        ("ℓ" ("l" ,@all))
        ("≬" ("()" ,@all))
@@ -464,7 +468,7 @@ expected by `pretty-patterns'"
        ("≛" ("*=" ,@c-justlike perl python))
        ("∇" ("def" python)		; APL creeping back
         ("sub" perl))
-       ;; ("💤" ("pass" python))
+       ("💤" ("pass" python))  ; OK if not monospaced, alone on line anyway.
        ("⚠" ("raise" python)
 	   ("throw" java c++)
 	   ("throws" java))
@@ -476,18 +480,29 @@ expected by `pretty-patterns'"
        ;; ("∗" ("*" org))	; doesn't work because of reasons.
        ("❌" (":END:" org))
        ;; Consider, for org:
-       ;; <<>>? <<<>>>? <>? @@? %%? []? {{{}}}? *_+=~/?
+       ;; <<>>? <<<>>>? <>? @@? %%? []? {{{}}}? *_+=~/? not without regexps.
        ;;
        ;; Multi-char substitutions!
        ("⁺¹" ("+1" ,@all))
        ("⁺⁰" ("+0" ,@all))
-       ("Zzz" ("pass" python))
+       ;; You can insert snarky style comments...
+       ;; ("badly_named_variable" ("x" ,@c-like))
+       ;; ("Zzz" ("pass" python))       ; If you don't like the 💤 character...
        ;;; Not even marked by a font-lock color, so you can't see it isn't
        ;;; normal text.  Probably not a good idea, but that applies to a lot of this
        ;;; file.
        ("ever" ("(;;)" ,@c-justlike))   ; follows "for"...
        ;;; or you could do it this way...
        ;; ("𝑒𝑣𝑒𝑟" ("(;;)" ,@c-justlike))
+       ;; You can make totally ridiculous rephrasings of your language...
+       ;; ("however, if" ("else if" ,@c-like)
+       ;;  ("elsif" perl)
+       ;;  ("elif" python sh))
+       ;; ("otherwise" ("else" ,@c-like))
+       ;; ("so long as" ("while" ,@c-like))
+       ;; ("decide based on" ("switch" c c++ sh))
+       ;; ("when it's" ("case" c c++))
+       ("❢❢" ("static_assert" c))
        )))
     "*List of pretty patterns.
 
@@ -529,7 +544,8 @@ relevant buffer(s)."
     ("⁑" ("\\(?:\\s.\\|\\s(\\)\\s-*\\(\\*\\*\\)" python c)) ; general enough?
     ;; Don't work at the beginning of a line, alas
     ;; Strings different from chars in C!
-    ("⍽" (".\\s-*\\(?2:\\(?1:[\"]\\) \\1\\)" c c++ java)) ; *string* space.
+    ("⍽" (".\\s-*\\(?2:\\(?1:[\"]\\) \\1\\)" c c++ java lisp
+          emacs-lisp)) ; *string* space.
     ("↫" (".\\s-*\\(?2:\\(?1:[\"]\\)\\\\r\\1\\)" c c++ java)) ; c "\n" _string_
     ("↩" (".\\s-*\\(?2:\\(?1:[\"]\\)\\\\n\\1\\)" c c++ java)) ; "\r"
     ;; Order apparently matters: looks like these need to be above ""
@@ -552,6 +568,13 @@ relevant buffer(s)."
     ("‣" ("^\\s-*\\(?1:-\\)" org))
     ;; Do ⒈ ⒉ ⒊ for org-mode numbered lists?  NO.
     ;; CLOCK: ⏰⏱⏲ and other keywords?  NO.
+
+    ("❓" ("\\(?:\\sw\\|\\s_\\)+\\(-p\\)" emacs-lisp lisp))
+    ("ʬw." ("//\\(www\\.\\)\\S-+" org))   ; regexp so it can happen mid"word"
+    ;; neato symbols for "^\\*\\*\\*\\*" type strings in org don't work
+    ;; very well, and they look lousy anyway.
+    ;; Another crazy example...
+    ;; ("{really really important block of code\nthat I'm totally not letting you\neven peek at!}" ("{\\s-*}" perl c c++ java))
     )))
 
 ;; Note:
