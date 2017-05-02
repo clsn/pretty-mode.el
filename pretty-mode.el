@@ -182,7 +182,7 @@ displayed as λ in lisp modes."
 		(pretty-key-regexps))
         (font-lock-fontify-buffer))
     (font-lock-remove-keywords nil (pretty-keywords))
-    (remove-text-properties (point-min) (point-max) '(composition nil))))
+    (remove-text-properties (point-min) (point-max) '(display nil))))
 
 (defun turn-on-pretty-if-desired ()
   "Turn on `pretty-mode' if the current major mode supports it."
@@ -485,7 +485,7 @@ expected by `pretty-patterns'"
        ;; Multi-char substitutions!
        ("⁺¹" ("+1" ,@all))
        ("⁺⁰" ("+0" ,@all))
-       ;; You can insert snarky style comments...
+       ;;; You can insert snarky style comments...
        ;; ("badly_named_variable" ("x" ,@c-like))
        ;; ("Zzz" ("pass" python))       ; If you don't like the 💤 character...
        ;;; Not even marked by a font-lock color, so you can't see it isn't
@@ -494,14 +494,15 @@ expected by `pretty-patterns'"
        ("ever" ("(;;)" ,@c-justlike))   ; follows "for"...
        ;;; or you could do it this way...
        ;; ("𝑒𝑣𝑒𝑟" ("(;;)" ,@c-justlike))
-       ;; You can make totally ridiculous rephrasings of your language...
+       ;;; You can make totally ridiculous rephrasings of your language...
        ;; ("however, if" ("else if" ,@c-like)
        ;;  ("elsif" perl)
        ;;  ("elif" python sh))
        ;; ("otherwise" ("else" ,@c-like))
        ;; ("so long as" ("while" ,@c-like))
-       ;; ("decide based on" ("switch" c c++ sh))
-       ;; ("when it's" ("case" c c++))
+       ;; ("decide based on" ("switch" c c++))
+       ;; ("when it's" ("case" c c++)
+       ;;  ("case" sh))
        ("❢❢" ("static_assert" c))
        )))
     "*List of pretty patterns.
@@ -509,26 +510,28 @@ expected by `pretty-patterns'"
 Should be a list of the form ((MODE ((REGEXP . GLYPH) ...)) ...)")
 
 
-(defun pretty-add-keywords (mode keywords)
-  "Add pretty character KEYWORDS to MODE
+;;; Needs to be updated since we're not doing compose-region anymore!
 
-MODE should be a symbol, the major mode command name, such as
-`c-mode' or nil. If nil, pretty keywords are added to the current
-buffer. KEYWORDS should be a list where each element has the
-form (REGEXP . CHAR). REGEXP will be replaced with CHAR in the
-relevant buffer(s)."
-  (font-lock-add-keywords
-   mode (mapcar (lambda (kw) `(,(car kw)
-                          (0 (prog1 nil
-			       ;; Use len(match-data)/2-1 to get the last group
-                               (compose-region (match-beginning
-						(1- (/
-						     (length (match-data)) 2)))
-                                               (match-end
-						(1- (/
-						     (length (match-data)) 2)))
-                                               ,(cdr kw))))))
-                keywords)))
+;; (defun pretty-add-keywords (mode keywords)
+;;   "Add pretty character KEYWORDS to MODE
+
+;; MODE should be a symbol, the major mode command name, such as
+;; `c-mode' or nil. If nil, pretty keywords are added to the current
+;; buffer. KEYWORDS should be a list where each element has the
+;; form (REGEXP . CHAR). REGEXP will be replaced with CHAR in the
+;; relevant buffer(s)."
+;;   (font-lock-add-keywords
+;;    mode (mapcar (lambda (kw) `(,(car kw)
+;;                           (0 (prog1 nil
+;; 			       ;; Use len(match-data)/2-1 to get the last group
+;;                                (compose-region (match-beginning
+;; 						(1- (/
+;; 						     (length (match-data)) 2)))
+;;                                                (match-end
+;; 						(1- (/
+;; 						     (length (match-data)) 2)))
+;;                                                ,(cdr kw))))))
+;;                 keywords)))
 
 ;; Keywords that have to be truly regexps
 ;; You probably can't put multiple regexps for the same char, since
@@ -573,8 +576,7 @@ relevant buffer(s)."
     ("ʬw." ("//\\(www\\.\\)\\S-+" org))   ; regexp so it can happen mid"word"
     ;; neato symbols for "^\\*\\*\\*\\*" type strings in org don't work
     ;; very well, and they look lousy anyway.
-    ;; Another crazy example...
-    ;; ("{really really important block of code\nthat I'm totally not letting you\neven peek at!}" ("{\\s-*}" perl c c++ java))
+    ("{really really important block of code\nthat I'm totally not letting you\neven peek at!}" ("{\\s-*}" perl c c++ java))
     )))
 
 ;; Note:
@@ -582,11 +584,13 @@ relevant buffer(s)."
 ;; The string +[''] does not replace with the epsilon, but change that
 ;; + sign to other symbols... some work (symbol syntax?), some don't...
 
-(defun pretty-regexp (regexp glyph)
-  "Replace REGEXP with GLYPH in buffer."
-  (interactive "MRegexp to replace:
-MCharacter to replace with: ")
-  (pretty-add-keywords nil `((,regexp . ,(string-to-char glyph))))
-  (font-lock-fontify-buffer))
+;;; This doesn't make sense until pretty-add-keywords is fixed
+;; (defun pretty-regexp (regexp glyph)
+;;   "Replace REGEXP with GLYPH in buffer."
+;;   (interactive "MRegexp to replace:
+;; MCharacter to replace with: ")
+;;   (pretty-add-keywords nil `((,regexp . ,(string-to-char glyph))))
+;;   (font-lock-fontify-buffer))
+
 
 (provide 'pretty-mode)
