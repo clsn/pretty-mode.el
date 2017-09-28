@@ -111,6 +111,7 @@
     (inf-haskell-mode . haskell-mode)
     (tuareg-interactive-mode . tuareg-mode)
     (inferior-python-mode . python-mode)
+    (pyrex-mode . python-mode)
     (inferior-octave-mode . octave-mode)
     (inferior-ruby-mode . ruby-mode))
   "Alist mapping from inferior process interaction modes to their
@@ -426,15 +427,21 @@ expected by `pretty-patterns'"
        ("⍐" ("__pow__" python))
        ("◪" ("__bool__" python))		; not the same as ◩ bool!
        ("✿" ("@" python))		; decoratorate with a flower
-       ;; Just more stupid things...
+       ("⍫" ("cdef" python))            ; These are for Pyrex mode really.
+       ("⍫∇" ("cpdef" python))
+       ("⍫T" ("ctypedef" python))
+       ("␀" ("NULL" python))
+       ("⦂" (":" python))
        ("✘" ("break" ,@c-justlike python)	; do these make any sense?
 	   ("last" perl))
        ("➤" ("continue" ,@c-justlike python) ; ?
 	   ("next" perl))		; different from python next
-       ("⌘" ("#" c c++)
+       ("⌘" ("#" c c++)                 ; ⧣⨳⌗
 	   ("#+" org))		      ; org-mode controls
        ("❰" ("{" ,@c-justlike perl))	; Make those braces pop! ❴❵ too thin.
        ("❱" ("}" ,@c-justlike perl))
+       ("⟦" ("[[" sh))
+       ("⟧" ("]]" sh))
        ;; (?⍰ ("<?>" java))		;??
        ("‡" ("++" ,@c-justlike))
        ;; "/**" for Doxygen stuff?
@@ -467,12 +474,16 @@ expected by `pretty-patterns'"
        ;; ("⩮" ("*=" ,@c-justlike perl python))
        ("≛" ("*=" ,@c-justlike perl python))
        ("∇" ("def" python)		; APL creeping back
-        ("sub" perl))
+        ("sub" perl)
+        ("defun" ,@lispy))
        ("💤" ("pass" python))  ; OK if not monospaced, alone on line anyway.
        ("⚠" ("raise" python)
 	   ("throw" java c++)
 	   ("throws" java))
        ("⊂" ("extends" java))
+       ("≫" (">>" sh))
+       ("≪" ("<<" sh))
+       ("⌥" ("2>&1" sh))                ; facing wrong way.
        ("☐" ("[ ]" org))			; checkboxes...
        ("☒" ("[X]" org))
        ("⊟" ("[-]" org))			; ⊡⚀⧄ ?
@@ -489,20 +500,20 @@ expected by `pretty-patterns'"
        ;; ("badly_named_variable" ("x" ,@c-like))
        ;; ("Zzz" ("pass" python))       ; If you don't like the 💤 character...
        ;;; Not even marked by a font-lock color, so you can't see it isn't
-       ;;; normal text.  Probably not a good idea, but that applies to a lot of this
-       ;;; file.
-       ("ever" ("(;;)" ,@c-justlike))   ; follows "for"...
+       ;;; normal text.  Probably not a good idea, but that applies to a
+       ;;; lot of this file.
+       ;; ("ever" ("(;;)" ,@c-justlike))   ; follows "for"...
        ;;; or you could do it this way...
        ;; ("𝑒𝑣𝑒𝑟" ("(;;)" ,@c-justlike))
        ;;; You can make totally ridiculous rephrasings of your language...
-       ;; ("however, if" ("else if" ,@c-like)
+       ;; ("failing that, if" ("else if" ,@c-like)
        ;;  ("elsif" perl)
        ;;  ("elif" python sh))
        ;; ("otherwise" ("else" ,@c-like))
        ;; ("so long as" ("while" ,@c-like))
-       ;; ("decide based on" ("switch" c c++))
-       ;; ("when it's" ("case" c c++)
+       ;; ("decide based on" ("switch" c c++ java)
        ;;  ("case" sh))
+       ;; ("when it's" ("case" c c++ java))
        ("❢❢" ("static_assert" c))
        )))
     "*List of pretty patterns.
@@ -573,7 +584,7 @@ Should be a list of the form ((MODE ((REGEXP . GLYPH) ...)) ...)")
     ;; CLOCK: ⏰⏱⏲ and other keywords?  NO.
 
     ("❓" ("\\(?:\\sw\\|\\s_\\)+\\(-p\\)" emacs-lisp lisp))
-    ("ʬw." ("//\\(www\\.\\)\\S-+" org))   ; regexp so it can happen mid"word"
+    ("ʬw." ("//\\(www\\.\\)\\sw+" org))   ; regexp so it can happen mid"word"
     ;; neato symbols for "^\\*\\*\\*\\*" type strings in org don't work
     ;; very well, and they look lousy anyway.
     ("{really really important block of code\nthat I'm totally not letting you\neven peek at!}" ("{\\s-*}" perl c c++ java))
