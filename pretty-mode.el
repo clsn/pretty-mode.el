@@ -401,7 +401,8 @@ expected by `pretty-patterns'"
        ;; These?  Probably dumb. ⊨ (TRUE) doesn't look true enough.
        ("■" ("True" python perl)	   ; ☑ and ☐/☒ aren't distinct enough.
 	   ("TRUE" c)
-           ("true" java c++))
+           ("true" java c++)
+           ("t" emacs-lisp lisp))
        ("□" ("False" python perl)
 	   ("FALSE" c)
            ("false" java c++))
@@ -476,6 +477,11 @@ expected by `pretty-patterns'"
        ("∇" ("def" python)		; APL creeping back
         ("sub" perl)
         ("defun" ,@lispy))
+       ("∇var" ("defvar" emacs-lisp))
+       ("∇custom" ("defcustom" emacs-lisp))
+       ("∙" ("." ,@lispy))    ; dotted pairs
+       ("❜" ("'" ,@lispy))
+       ("❟" ("," ,@lispy))
        ("💤" ("pass" python))  ; OK if not monospaced, alone on line anyway.
        ("⚠" ("raise" python)
 	   ("throw" java c++)
@@ -574,7 +580,8 @@ Should be a list of the form ((MODE ((REGEXP . GLYPH) ...)) ...)")
     ("␣" (".\\s-*\\(?2:\\(?1:[']\\) \\1\\)" c c++ java)
 	(".\\s-*\\(?2:\\(?1:['\"]\\) \\1\\)" python perl))
     ("‴" ("\\(?:^\\|.\\)?\\s-*\\(\"\"\"\\|'''\\)" python))
-    ("ϵ" (".\\s-*\\(?2:\\(?1:['\"]\\)\\1\\)" perl python c c++ sh java))
+    ("ϵ" (".\\s-*\\(?2:\\(?1:['\"]\\)\\1\\)" perl python c c++ sh java
+          emacs-lisp lisp))
     ("⏨" ("[0-9.]+\\(e\\)[-+]?[0-9]+" perl python c c++ java)) ;exponent
     ("✦" ("^\\s-*\\(?1:\\+\\)" org))
     ("⊛" ("^\\s-+\\(?1:\\*\\)" org))	; _Plain lists_ with *
