@@ -82,15 +82,8 @@
                                   (if (> (length alist) 1)
                                       (assoc (match-string lastgp) alist)
                                     (car alist)))))
-      ;; What about stuff between a and b?  Need I worry?
-      (put-text-property start end 'modification-hooks
-                         '((lambda (a b)
-                             (let* ((inhibit-modification-hooks t)
-                                    (start (previous-single-property-change a 'display))
-                                    (end (next-single-property-change b 'display)))
-                               (remove-text-properties (or start 1)
-                                                       (or end (buffer-size))
-                                                       '(display))))))
+      ;; Used to have a modification hook to remove the display prop,
+      ;; but if display is managed by font-lock, shouldn't be necessary.
 ;;; Uncomment these lines and redefine the function to make it actually
 ;;; change the characters!
 ;;;      (insert (char-to-string (cdr (if (> (length alist) 1)
@@ -181,9 +174,11 @@ displayed as λ in lisp modes."
         (font-lock-add-keywords nil (pretty-keywords) t)
 	(mapcar (lambda (x) (font-lock-add-keywords nil x t))
 		(pretty-key-regexps))
+        (setq font-lock-extra-managed-props
+              (cons 'display font-lock-extra-managed-props))
         (font-lock-fontify-buffer))
     (font-lock-remove-keywords nil (pretty-keywords))
-    (remove-text-properties (point-min) (point-max) '(display nil))))
+    (font-lock-fontify-buffer)))
 
 (defun turn-on-pretty-if-desired ()
   "Turn on `pretty-mode' if the current major mode supports it."
