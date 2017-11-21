@@ -137,10 +137,10 @@ with a symbol"
 MODE is nil. Return nil if there are no keywords."
   (let* ((mode (or mode major-mode))
          (kwds (cdr-safe
-                (or (assoc mode pretty-patterns)
+                (or (assoc mode (pretty-compile-patterns pretty-patterns))
                     (assoc (cdr-safe
                             (assoc mode pretty-interaction-mode-alist))
-                           pretty-patterns)))))
+                           (pretty-compile-patterns pretty-patterns))))))
     (pretty-font-lock-keywords kwds)))
 
 (defun pretty-key-regexps (&optional mode)
@@ -175,7 +175,7 @@ displayed as λ in lisp modes."
 	(mapcar (lambda (x) (font-lock-add-keywords nil x t))
 		(pretty-key-regexps))
         (setq font-lock-extra-managed-props
-              (cons 'display font-lock-extra-managed-props))
+              (add-to-list 'font-lock-extra-managed-props 'display))
         (font-lock-fontify-buffer))
     (font-lock-remove-keywords nil (pretty-keywords))
     (font-lock-fontify-buffer)))
@@ -222,13 +222,12 @@ expected by `pretty-patterns'"
 
 ;; I am adding a great many of these which I will freely admit to being
 ;; there simply because I can and am trying to maximize "stuff" being done.
-(defvar pretty-patterns
+(defvar default-pretty-patterns
   (let* ((lispy '(scheme emacs-lisp lisp))
          (mley '(tuareg haskell sml))
          (c-like '(c c++ perl sh python java ess ruby))
 	 (c-justlike '(c c++ java))
          (all (append lispy mley c-like (list 'octave))))
-    (pretty-compile-patterns
      `(
        ("≠" ("!=" ,@c-like scheme octave)
            ("<>" tuareg octave python)
@@ -476,7 +475,9 @@ expected by `pretty-patterns'"
        ("∇custom" ("defcustom" emacs-lisp))
        ("∙" ("." ,@lispy))    ; dotted pairs
        ("❜" ("'" ,@lispy))
+       ("❟◎" (",@" ,@lispy))
        ("❟" ("," ,@lispy))
+       ("‣" ("`" ,@lispy))
        ("💤" ("pass" python))  ; OK if not monospaced, alone on line anyway.
        ("⚠" ("raise" python)
 	   ("throw" java c++)
@@ -512,14 +513,34 @@ expected by `pretty-patterns'"
        ;;  ("elif" python sh))
        ;; ("otherwise" ("else" ,@c-like))
        ;; ("so long as" ("while" ,@c-like))
-       ;; ("decide based on" ("switch" c c++ java)
+       ;; ("decide based on" ("switch" c c++ java))
+       ;; ("when it's" ("case" c c++ java)
        ;;  ("case" sh))
        ;; ("when it's" ("case" c c++ java))
        ("❢❢" ("static_assert" c))
-       )))
-    "*List of pretty patterns.
+       ))
+    "*Default list of pretty patterns.")
 
-Should be a list of the form ((MODE ((REGEXP . GLYPH) ...)) ...)")
+(defcustom pretty-patterns default-pretty-patterns
+  "*List of pretty patterns.  The \"key\" in the top-level alist is the string
+that will be displayed.  The alist which is the \"value\" for that key has
+as its keys the various strings that are replaced with the string displayed,
+and the modes where that applies.  For example, the string \"≠\" is displayed
+in place of \"!=\" in c-mode and python-mode, also in place of \"<>\" in
+python-mode, and in place of \"/=\" in emacs-lisp-mode.  So the list would
+look like this:
+ ( ...
+   (\"≠\"
+      (\"!=\" c python)
+      (\"<>\" python)
+      (\"/=\" emacs-lisp))
+   ...
+ )
+"
+  ;; :type '(repeat (cons string (repeat (cons string sexp))))
+  :type '(alist :key-type string :value-type
+                (alist :key-type string :value-type (repeat symbol)))
+  )
 
 
 ;;; Needs to be updated since we're not doing compose-region anymore!
@@ -554,7 +575,7 @@ Should be a list of the form ((MODE ((REGEXP . GLYPH) ...)) ...)")
   ;; Format: same as for patterns:
   ;; (glyph (regexp mode...) ... )
   (pretty-compile-patterns
-  '(("∙" (".\\(\\.\\)[[:alpha:]_]" python java c c++))
+   '(("∙" (".\\(\\.\\)[[:alpha:]_]" python java c c++))
     ("ⅉ" ("[[:digit:]]+\\(j\\)" python))
     ("⁑" ("\\(?:\\s.\\|\\s(\\)\\s-*\\(\\*\\*\\)" python c)) ; general enough?
     ;; Don't work at the beginning of a line, alas
@@ -584,8 +605,6 @@ Should be a list of the form ((MODE ((REGEXP . GLYPH) ...)) ...)")
     ("‣" ("^\\s-*\\(?1:-\\)" org))
     ;; Do ⒈ ⒉ ⒊ for org-mode numbered lists?  NO.
     ;; CLOCK: ⏰⏱⏲ and other keywords?  NO.
-
-    ("❓" ("\\(?:\\sw\\|\\s_\\)+\\(-p\\)" emacs-lisp lisp))
     ("ʬw." ("//\\(www\\.\\)\\sw+" org))   ; regexp so it can happen mid"word"
     ;; neato symbols for "^\\*\\*\\*\\*" type strings in org don't work
     ;; very well, and they look lousy anyway.
