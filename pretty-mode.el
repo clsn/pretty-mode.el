@@ -178,6 +178,7 @@ displayed as λ in lisp modes."
               (add-to-list 'font-lock-extra-managed-props 'display))
         (font-lock-fontify-buffer))
     (font-lock-remove-keywords nil (pretty-keywords))
+    (mapcar (lambda (x) (font-lock-remove-keywords nil x)) (pretty-key-regexps))
     (font-lock-fontify-buffer)))
 
 (defun turn-on-pretty-if-desired ()
@@ -244,7 +245,7 @@ expected by `pretty-patterns'"
        ;; (?∌ ("!~" perl))
        ("≅" ("=~" perl))
        ("≇" ("!~" perl))
-       ("∷" ("::" perl c++))
+       ("∷" ("::" perl c++ org))
        ;; ⊲⊳⊰⊱≺≻≈ for gt/lt/eq?
        ;; ≎⇔⋛ʭЖж for eq? cmp?
        ("ж" ("cmp" perl))		;looks a little like >< signs.
@@ -282,7 +283,7 @@ expected by `pretty-patterns'"
        ("ϵ" ("q()" perl))
        ("≟" ("==" ,@all))	   ; so what, having fun.
        ("←" ("=" ,@c-like))	   ; assignment
-       ("…" ("..." scheme perl))	; perl6  maybe ⋰ to differentiate from .. ?
+       ("…" ("..." scheme perl org))	; perl6  maybe ⋰ to differentiate from .. ?
        ("‥" (".." perl))		; maybe hard to read
 ;;;    ("∀" ("List.for_all" tuareg))
        ("∀" ("all" tuareg perl python)		; perl6
@@ -470,7 +471,8 @@ expected by `pretty-patterns'"
        ("≛" ("*=" ,@c-justlike perl python))
        ("∇" ("def" python)		; APL creeping back
         ("sub" perl)
-        ("defun" ,@lispy))
+        ("defun" ,@lispy)
+        ("function" sh))
        ("∇var" ("defvar" emacs-lisp))
        ("∇custom" ("defcustom" emacs-lisp))
        ("∙" ("." ,@lispy))    ; dotted pairs
@@ -489,7 +491,6 @@ expected by `pretty-patterns'"
        ("☐" ("[ ]" org))			; checkboxes...
        ("☒" ("[X]" org))
        ("⊟" ("[-]" org))			; ⊡⚀⧄ ?
-       ("∷" ("::" org))
        ;; ("∗" ("*" org))	; doesn't work because of reasons.
        ("❌" (":END:" org))
        ;; Consider, for org:
